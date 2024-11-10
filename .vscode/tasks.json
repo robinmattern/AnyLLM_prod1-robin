@@ -1,0 +1,123 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  // .(41030.01 10/30/24 RAM  3:10p| Add Run All task 
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "options": {
+          "cwd": "${workspaceFolder}",
+          "statusbar": {
+              "color": "#ffea00",
+              "detail": "Runs all apps, but doesn't stop them",
+              "label": "Run All apps",           
+          }
+      },
+      "dependsOn": [
+          "Collector: run",
+          "Server: run",
+          "Frontend: run"
+      ],
+      "dependsOrder": "parallel",
+      "presentation": {
+          "echo": true,
+          "reveal": "always",
+          "focus": false,
+          "panel": "new",
+          "showReuseMessage": true,
+          "clear": false
+      },
+      "label": "All Apps: run",
+      "isBackground": true,
+      "problemMatcher": "$tsc-watch"
+    },
+    {
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/collector",
+        "statusbar": {
+          "color": "#ffea00",
+          "detail": "Runs the collector",
+          "label": "Collector: $(play) run",
+          "running": {
+            "color": "#07154d",
+            "label": "Collector: $(gear~spin) running"
+          }
+        }
+      },
+      "command": "cd ${workspaceFolder}/collector/ && yarn dev",
+      "runOptions": {
+        "instanceLimit": 1,
+        "reevaluateOnRerun": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "label": "Collector: run"
+    },
+    {
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/server",
+        "statusbar": {
+          "color": "#ffea00",
+          "detail": "Runs the server",
+          "label": "Server: $(play) run",
+          "running": {
+            "color": "#07154d",
+            "label": "Server: $(gear~spin) running"
+          }
+        }
+      },
+      "command": "if [ \"${CODESPACES}\" = \"true\" ]; then while ! gh codespace ports -c $CODESPACE_NAME | grep 3001; do sleep 1; done; gh codespace ports visibility 3001:public -c $CODESPACE_NAME; fi & cd ${workspaceFolder}/server/ && yarn dev",
+      "runOptions": {
+        "instanceLimit": 1,
+        "reevaluateOnRerun": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "label": "Server: run"
+    },
+    {
+      "type": "shell",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend",
+        "statusbar": {
+          "color": "#ffea00",
+          "detail": "Runs the frontend",
+          "label": "Frontend: $(play) run",
+          "running": {
+            "color": "#07154d",
+            "label": "Frontend: $(gear~spin) running"
+          }
+        }
+      },
+      "command": "cd ${workspaceFolder}/frontend/ && yarn dev",
+      "runOptions": {
+        "instanceLimit": 1,
+        "reevaluateOnRerun": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "label": "Frontend: run"
+    }
+  ]
+}
