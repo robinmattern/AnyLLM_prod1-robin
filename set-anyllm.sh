@@ -43,6 +43,7 @@
   aVer="v0.05.41023.1443"  # set-anyllm.sh
   aVer="v0.05.41024.1000"  # set-anyllm.sh
   aVer="v0.05.41109.2000"  # set-anyllm.sh
+  aVer="v0.05.41111.1022"  # set-anyllm.sh
 
   echo ""
 
