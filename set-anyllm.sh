@@ -9,7 +9,9 @@
 ##FD   set-anyllm.sh            |   6240| 10/22/24 09:15|      | v1.04`41022.0915
 ##FD   set-anyllm.sh            |   6391| 10/23/24 07:25|      | v1.05`41023.0725
 ##FD   set-anyllm.sh            |   6401| 11/09/24 15:40|      | v1.05`41109.1540
+##FD   set-anyllm.sh            |   6508| 11/11/24 10:22|   157| v1.05`41111.1022
 ##FD   set-anyllm.sh            |   6647| 11/11/24 22:00|   158| v1.05`41111.2200
+##FD   set-anyllm.sh            |   6741| 11/12/24 08:35|   181| v1.05`41112.0830
 ##FD                            |
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #            This script saves anyllm command to ._0/bin.
@@ -34,6 +36,8 @@
 # .(41109.06 11/09/24 RAM  3:40p| Add this heading and remove some stuff
 # .(41111.03 11/11/24 RAM 10:22a| Add Show command and fix some stuff
 # .(41111.10 11/11/24 RAM 10:00p| Fx OS == "Windows", not "windows"
+# .(41112.01 11/12/24 RAM  8:00a| Show version and source
+# .(41112.02 11/12/24 RAM  8:30a| Display anyllm version being installed
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -41,10 +45,11 @@
 #*/
 #========================================================================================================== #  ===============================  #
 
-  aVer="v0.05.41023.1443"  # set-anyllm.sh
-  aVer="v0.05.41024.1000"  # set-anyllm.sh
-  aVer="v0.05.41109.2000"  # set-anyllm.sh
+  aVer="v0.05.41022.0915"  # set-anyllm.sh
+  aVer="v0.05.41023.0725"  # set-anyllm.sh
+  aVer="v0.05.41109.1540"  # set-anyllm.sh
   aVer="v0.05.41111.1022"  # set-anyllm.sh
+  aVer="v0.05.41112.0830"  # set-anyllm.sh
 
   echo ""
 
@@ -95,18 +100,32 @@ function Sudo() {                                                               
 
 # ---------------------------------------------------------------------------
 
+function getBinVersion() {                                                                                  # .(41112.01.1 RAM Write getBinVersion Beg)
+  aBinFile="$( cat "${aBinDir}/$1" | awk '/\.sh/ { sub( /"\$.+/, "" ); sub( /^ */, "" ); sub( / *$/, "" ); print }' )"
+# aBinFile="$( cat "${aBinDir}/$1" | awk '/\.sh/' )"; echo "  '${aBinFile}'"; exit
+  aBinVer="$(  cat "${aBinFile}"   | awk '/ aVer=/ { sub( /aVer=/, "" ); a = $1 }; END{ print a }' )"
+  aBinVer="$(  cat "${aBinFile}"   | awk '/ aVer="?v[0-9]/ { sub( /aVer=/, "" ); a = $1 }; END{ print a }' )"
+  }                                                                                                         # .(41112.01.1 End)
+# -----------------------------------------------------------
+
 function showEm() {
+         getBinVersion "anyllm"                                                                             # .(41112.01.2 RAM Use it)
 
   echo "  aBinDir: '${aBinDir}'"
   if [ -d "${aBinDir}" ]; then ls -l "${aBinDir}" | awk 'NR > 1 { print "    " $0 }'; fi
-  echo ""
 
+  echo ""
   echo "  .Bashrc: '${aBashrc}'"
   if [ -f "${aBashrc}" ]; then cat  "${aBashrc}" | awk '{ print "    " $0 }'; fi
   echo -e "    -------\n"
 
   echo "  PATH:"
-  echo "${PATH}" | awk '{ gsub( /:/, "\n" ); print}' | awk '/bin$/ { print "    " $0 }' # .(41111.03.4)
+  echo "${PATH}" | awk '{ gsub( /:/, "\n" ); print}' | awk '/bin$/ { print "    " $0 }' | sort              # .(41111.03.4)
+
+  echo ""                                                                                                   # .(41112.01.3)
+  echo "  anyllm Version: ${aBinVer}"                                                                       # .(41112.01.4 RAM Display it)
+  echo "  anyllm Location: ${aBinDir}/anyllm"                                                               # .(41112.01.5)
+  echo "  anyllm Script:  '${aBinFile}'"                                                                    # .(41112.01.6)
   }
 # -----------------------------------------------------------
 
@@ -131,11 +150,14 @@ function cpyToBin() {
 # echo " alias gitr: ${aJPTs_JDir}/gitr.sh";
 # echo " copying run-anyllm.sh and gitr to: \"${aJPTs_JDir}\""; echo ""
 
-  if [ ! -d  "${aJPTs_JDir}" ]; then sudo mkdir -p  "${aJPTs_JDir}";                    echo "  Done: created ${aJPTs_JDir}";
+  if [ ! -d  "${aJPTs_JDir}" ]; then sudo mkdir -p  "${aJPTs_JDir}";                    echo "  Created: ${aJPTs_JDir}";
                                      Sudo chmod 777 "${aJPTs_JDir}"; fi                 # .(41111.03.5 RAM was sudo)
 
-  if [   -f  "${aAnyLLMscr}" ]; then mkScript "${aAnyLLMscr}" "${aJPTs_JDir}" "anyllm"; echo "  Done: created ${aJPTs_JDir}/anyllm";
+  if [   -f  "${aAnyLLMscr}" ]; then mkScript "${aAnyLLMscr}" "${aJPTs_JDir}" "anyllm"; echo "  Copied:  ${aJPTs_JDir}/anyllm";
                                      Sudo chmod 777 "${aAnyLLMscr}"; fi
+                                     getBinVersion "anyllm"                             # .(41112.02.1)
+
+  echo "  Version: ${aBinVer//\"}"                                                      # .(41112.02.2 RAM Show version being installed)
   }
 # ---------------------------------------------------------------------------
 
