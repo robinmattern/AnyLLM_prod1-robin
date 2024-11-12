@@ -9,7 +9,7 @@
 ##FD   set-anyllm.sh            |   6240| 10/22/24 09:15|      | v1.04`41022.0915
 ##FD   set-anyllm.sh            |   6391| 10/23/24 07:25|      | v1.05`41023.0725
 ##FD   set-anyllm.sh            |   6401| 11/09/24 15:40|      | v1.05`41109.1540
-##FD   set-anyllm.sh            |   6508| 11/11/24 10:22|   157| v1.05`41111.1022
+##FD   set-anyllm.sh            |   6647| 11/11/24 19:36|   158| v1.05`41111.1022
 ##FD                            |
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #            This script saves anyllm command to ._0/bin.
@@ -52,10 +52,10 @@
 function help() {
   echo "  Run . ./set-anyllm.sh commands  (${aVer} OS: ${aOS})"
   echo "    help  This help"
-  echo "    doit  Create command anyllm"           										# .(41111.03.1)
-# echo "    doit  Make folders"                    										##.(41111.03.2)
-  echo "    show  Show commands and ${aBashrc} and \$PATH"    							# .(41111.03.3)
-# echo "    wipe  Wipe all the setup"              										##.(41111.03.4)
+  echo "    doit  Create command anyllm"                                                # .(41111.03.1)
+# echo "    doit  Make folders"                                                         ##.(41111.03.2)
+  echo "    show  Show commands and ${aBashrc} and \$PATH"                              # .(41111.03.3)
+# echo "    wipe  Wipe all the setup"                                                   ##.(41111.03.4)
   }
 # -----------------------------------------------------------
 
@@ -105,7 +105,7 @@ function showEm() {
   echo -e "    -------\n"
 
   echo "  PATH:"
-  echo "${PATH}" | awk '{ gsub( /:/, "\n" );  print }' | awk '/bin$/ { print "    " $0 }'   # .(41111.03.4)
+  echo "${PATH}" | awk '{ gsub( /:/, "\n" ); print}' | awk '/bin$/ { print "    " $0 }' # .(41111.03.4)
   }
 # -----------------------------------------------------------
 
@@ -146,7 +146,7 @@ function cpyToBin() {
 
   if [[ "${aCmd}" == "help"   ]]; then help; fi
   if [[ "${aCmd}" == "showEm" ]]; then showEm; fi
-# if [[ "${aCmd}" == "doIt"   ]]; then setBashrc; fi                                    # .(41111.03.6)
+# if [[ "${aCmd}" == "doIt"   ]]; then setBashrc; fi                                    ##.(41111.03.6)
   if [[ "${aCmd}" == "doIt"   ]]; then cpyToBin; fi
 
 # ---------------------------------------------------------------------------
