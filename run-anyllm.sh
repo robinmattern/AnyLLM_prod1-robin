@@ -9,6 +9,7 @@
 ##FD   run-anyllm.sh            |   5178| 10/22/24 16:55|      | v1.05`41022.1655
 ##FD   run-anyllm.sh            |   5486| 10/23/24 08:37|      | v1.05`41023.0837
 ##FD   run-anyllm.sh            |   5486| 11/09/24 16:10|      | v1.05`41109.1610
+##FD   run-anyllm.sh            |   5486| 11/11/24 19:08|      | v1.05`41111.1908
 ##FD   run-anyllm.sh            |       |               |      | 
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps 
@@ -34,7 +35,8 @@
 # .(41016.01 10/23/24 RAM  8:37a| 
 # .(41109.07 11/09/24 RAM  4:10p| Add this heading  
 # .(41109.08 11/09/24 RAM  4:30p| Get remote for origin only
-# .(41109.09 11/09/24 RAM  6:40p| Write show ports for Windows  
+# .(41109.09 11/09/24 RAM  6:10p| Write show ports for Windows  
+# .(41111.06 11/09/24 RAM  7:08p| Allow anyllm to run from anywhere 
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -45,6 +47,7 @@
   aVer="v0.05.41023.1335"  # run-anyllm.sh 
   aVer="v0.05.41024.1000"  # run-anyllm.sh 
   aVer="v0.05.41109.1410"  # run-anyllm.sh 
+  aVer="v0.05.41111.1908"  # run-anyllm.sh 
 
   # ---------------------------------------------------------------------------
 
@@ -176,8 +179,14 @@ function showPorts() {
 # ---------------------------------------------------------------------------
 
   if [ ! -d ".git" ]; then
-     echo -e "\n* You are not in a Git Repository"
-     exit_wCR
+     aPath="$( dirname $0)"; aScriptDir="${aPath##*/}";        # echo "  aScriptDir:  ${aScriptDir}"        # .(41111.06.1 RAM Enable anyllm to run from anythere beg)
+     aCurrentDir="$( pwd )"; aCurrentDir="${aCurrentDir##*/}"; # echo "  aCurrentDir: ${aCurrentDir}"
+     if [ "${aScriptDir}" != "${aCurrentDir}" ]; then 
+#       echo -e "\n* You are not in a Git Repository"
+        echo -e "\n* You are not in the ${aScriptDir} folder, but that's ok."
+        cd "${aPath}"; 
+#       exit_wCR
+        fi                                                                                                  # .(41111.06.1 End)
      fi
 # ---------------------------------------------------------------------------
 
