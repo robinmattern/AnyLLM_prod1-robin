@@ -9,7 +9,7 @@
 ##FD   set-anyllm.sh            |   6240| 10/22/24 09:15|      | v1.04`41022.0915
 ##FD   set-anyllm.sh            |   6391| 10/23/24 07:25|      | v1.05`41023.0725
 ##FD   set-anyllm.sh            |   6401| 11/09/24 15:40|      | v1.05`41109.1540
-##FD   set-anyllm.sh            |   6647| 11/11/24 19:36|   158| v1.05`41111.1022
+##FD   set-anyllm.sh            |   6647| 11/11/24 22:00|   158| v1.05`41111.2200
 ##FD                            |
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #            This script saves anyllm command to ._0/bin.
@@ -33,6 +33,7 @@
 # .(41023.01 10/23/24 RAM  7:25a|
 # .(41109.06 11/09/24 RAM  3:40p| Add this heading and remove some stuff
 # .(41111.03 11/11/24 RAM 10:22a| Add Show command and fix some stuff
+# .(41111.10 11/11/24 RAM 10:00p| Fx OS == "Windows", not "windows"
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -82,7 +83,7 @@ function setOSvars() {
 # -----------------------------------------------------------
 
 function Sudo() {                                                                                           # .(41105.03.1 RAM Write Sudo)
-  if [[ "${OS:0:7}" != "windows" ]]; then if [ "${USERNAME}" != "root" ]; then sudo "$@"; fi; fi            # .(41105.03.2)
+  if [[ "${OS:0:7}" != "Windows" ]]; then if [ "${USERNAME}" != "root" ]; then sudo "$@"; fi; fi            # .(41111.10.1 RAM Was: "windows").(41105.03.2)
      }                                                                                                      # .(41105.03.3)
 # -----------------------------------------------------------
 
