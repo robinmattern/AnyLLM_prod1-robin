@@ -36,7 +36,7 @@ function findRootDir(startDir) {
    var  aRootDir = findRootDir( __dirname );
    var  aJPTsDir = `${aRootDir}/._2/ALTs`                                               // .(41109.14.3 RAM Was ._2/JPTs).(41012.01.2).(41005.02.1 RAM Create aJPTsDir)
 
-// var        pJPTs = require( path.join( aRootDir, '._2/JPTs/Utils/saveAICode.cjs' ));
+// var        pJPTs = require( path.join( aRootDir, '._2/ALTs/Utils/saveAICode.cjs' ));
 
 // Define a global function to lazily load JPTs
 Object.defineProperty( global, 'JPTs', {
