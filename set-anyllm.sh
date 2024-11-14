@@ -8,10 +8,11 @@
 ##FD   set-anyllm.sh            |   5356| 10/22/24 08:10|      | v1.04`41022.0810
 ##FD   set-anyllm.sh            |   6240| 10/22/24 09:15|      | v1.04`41022.0915
 ##FD   set-anyllm.sh            |   6391| 10/23/24 07:25|      | v1.05`41023.0725
-##FD   set-anyllm.sh            |   6401| 11/09/24 15:40|      | v1.05`41109.1540
+##FD   set-anyllm.sh            |   6401| 11/09/24 20:00|      | v1.05`41109.2000
 ##FD   set-anyllm.sh            |   6508| 11/11/24 10:22|   157| v1.05`41111.1022
 ##FD   set-anyllm.sh            |   6647| 11/11/24 22:00|   158| v1.05`41111.2200
 ##FD   set-anyllm.sh            |   6741| 11/12/24 08:35|   181| v1.05`41112.0830
+##FD   set-anyllm.sh            |   6741| 11/14/24 10:39|   181| v1.05`41114.1030
 ##FD                            |
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #            This script saves anyllm command to ._0/bin.
@@ -34,10 +35,12 @@
 # .(41022.01 10/22/24 RAM  9:15a|
 # .(41023.01 10/23/24 RAM  7:25a|
 # .(41109.06 11/09/24 RAM  3:40p| Add this heading and remove some stuff
+# .(41109.13 11/09/24 RAM  8:00p| Remove copy of gitr.sh
 # .(41111.03 11/11/24 RAM 10:22a| Add Show command and fix some stuff
 # .(41111.10 11/11/24 RAM 10:00p| Fx OS == "Windows", not "windows"
 # .(41112.01 11/12/24 RAM  8:00a| Show version and source
 # .(41112.02 11/12/24 RAM  8:30a| Display anyllm version being installed
+# .(41114.01 11/14/24 RAM 10:30a| Add back AnythingLLM's debug commands
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -47,9 +50,10 @@
 
   aVer="v0.05.41022.0915"  # set-anyllm.sh
   aVer="v0.05.41023.0725"  # set-anyllm.sh
-  aVer="v0.05.41109.1540"  # set-anyllm.sh
+  aVer="v0.05.41109.2000"  # set-anyllm.sh
   aVer="v0.05.41111.1022"  # set-anyllm.sh
   aVer="v0.05.41112.0830"  # set-anyllm.sh
+  aVer="v0.05.41114.1030"  # set-anyllm.sh
 
   echo ""
 
@@ -141,7 +145,7 @@ function cpyToBin() {
 # return
 
   aJPTs_JDir="${aBinDir}"   # "/Users/Shared/._0/bin"
-# aJPTs_GitR="${aRepo_Dir}/._2/JPTs/gitr.sh"                                            # .(41109.14.2 RAM Not needed )
+# aJPTs_GitR="${aRepo_Dir}/._2/JPTs/gitr.sh"                                            # .(41109.13.1 RAM Not needed )
   aAnyLLMscr="${aRepo_Dir}/run-anyllm.sh"
 
 # echo ""
