@@ -11,6 +11,7 @@
 ##FD   run-anyllm.sh            |   5486| 11/09/24 16:10|      | v1.05`41109.1610
 ##FD   run-anyllm.sh            |   5486| 11/11/24 19:08|      | v1.05`41111.1908
 ##FD   set-anyllm.sh            |  17748| 11/12/24 08:36|   322| v1.05`41112.0830
+##FD   set-anyllm.sh            |  19279| 11/14/24 10:30|   354| v1.05`41114.1030
 ##FD   run-anyllm.sh            |       |               |      |
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
@@ -39,6 +40,7 @@
 # .(41109.09 11/09/24 RAM  6:10p| Write show ports for Windows
 # .(41111.06 11/09/24 RAM  7:08p| Allow anyllm to run from anywhere
 # .(41112.03 11/12/24 RAM  8:30a| Add version and source
+# .(41114.02 11/14/24 RAM 10:30a| Write and use setIPAddr for frontend .env
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -51,6 +53,7 @@
   aVer="v0.05.41109.1410"  # run-anyllm.sh
   aVer="v0.05.41111.1908"  # run-anyllm.sh
   aVer="v0.05.41112.0830"  # run-anyllm.sh
+  aVer="v0.05.41114.1030"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -132,6 +135,33 @@ function getBinVersion() {                                                      
    exit_wCR
    fi
    }
+# ---------------------------------------------------------------------------
+   IPv4 Address. . . . . . . . . . . :
+
+function get_subnet_ip() {
+   local pattern=$1
+   for ip in "${ips[@]}"; do
+       if [[ $ip =~ $pattern ]]; then
+           echo "$ip"
+           return 0
+       fi
+   done
+   return 1
+   }
+
+function setIPAddr() {                                                                  #.(41114.02.1 RAM Write setIPAddr)
+   if [ "${aOS}" != "windows" ]; then
+         mapfile -t ips < <( ifconfig | awk '/inet/ { print substr( $0, 40 )}' )
+       else
+         mapfile -t ips < <( ipconfig | awk '/IPv4/ { print substr( $0, 40 )}' )
+         fi
+         aIPAddr="$( get_subnet_ip "^192\.168\." || \
+                     get_subnet_ip "^10\.0\.0\." || \
+                     get_subnet_ip "^172\."      || \
+                              echo  "127.0.0.1" )"
+       echo "  Setting ./frontend/.env IP Address to ${aIPAddr}"
+       sed -i "/^[[:space:]]*SERVER_IP=/ c\  SERVER_IP=${aIPAddr}" ./frontend/.env
+       }                                                                                #.(41114.02.1 End)
 # ---------------------------------------------------------------------------
 
 function showPorts() {
@@ -245,9 +275,9 @@ function showPorts() {
   if [ "${aCmd}" == "version" ]; then
      getBinVersion "anyllm"                                                             # .(41112.03.2 RAM Use it)
      echo ""                                                                            # .(41112.03.3)
-     echo "  anyllm Version: ${aBinVer}"                                                # .(41112.03.4 RAM Display it)
-     echo "  anyllm Location: ${aBinDir}/anyllm"                                        # .(41112.03.5)
-     echo "  anyllm Script:  '${aBinFile}'"                                             # .(41112.03.6)
+     echo "  anyllm Version:  ${aBinVer}"                                               # .(41112.03.4 RAM Display it)
+     echo "  anyllm Script:    ${aBinDir}/anyllm"                                       # .(41112.03.5)
+     echo "  anyllm Location: '${aBinFile}'"                                            # .(41112.03.6)
      fi
 # ---------------------------------------------------------------------------
 
@@ -258,6 +288,7 @@ function showPorts() {
 # ---------------------------------------------------------------------------
 
   if [ "${aCmd}" == "copyEnvs" ]; then
+#    echo "  aRepoDir:  '${aRepoDir}'"; echo "  cp -p \"${aRepoDir}/collector/.env.example\""; # exit
      echo ""
      echo "  copying ./collector/.env.example to ./collector/.env ($(  ls -l ./collector/.env | awk '{ print $6" "$7" "$8"  "$5" bytes" }' ))"
      cp -p "${aRepoDir}/collector/.env.example"          "${aRepoDir}/collector/.env"
@@ -266,6 +297,7 @@ function showPorts() {
      echo "  copying ./frontend/.env.example  to ./frontend/.env  ($(  ls -l ./frontend/.env  | awk '{ print $6" "$7" "$8"  "$5" bytes" }' ))"
      cp -p "${aRepoDir}/frontend/.env.example"           "${aRepoDir}/frontend/.env"
      echo "  copied  ./frontend/.env.example  to ./frontend/.env  ($(  ls -l ./frontend/.env  | awk '{ print $6" "$7" "$8"  "$5" bytes" }' ))"
+             setIPAddr                                                                  #.(41114.02.2)
      echo ""
      echo "  copying ./server/.env.development.example to ./server/.env.development ($(  ls -l ./server/.env.development | awk '{ print $6" "$7" "$8"  "$5" bytes" }' ))"
      cp -p "${aRepoDir}/server/.env.development.example" "${aRepoDir}/server/.env.development"
