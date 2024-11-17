@@ -12,7 +12,7 @@
 ##FD   run-anyllm.sh            |   5486| 11/11/24 19:08|      | v1.05`41111.1908
 ##FD   set-anyllm.sh            |  17748| 11/12/24 08:36|   322| v1.05`41112.0830
 ##FD   set-anyllm.sh            |  19279| 11/14/24 10:30|   354| v1.05`41114.1030
-##FD   set-anyllm.sh            |  22489| 11/16/24 11:40|   405| v1.05`41115.1140
+##FD   set-anyllm.sh            |  23622| 11/17/24 17:51|   420| v1.05`41117.1745
 ##FD   run-anyllm.sh            |       |               |      |
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
@@ -44,6 +44,7 @@
 # .(41114.02 11/14/24 RAM 10:30a| Write and use setIPAddr for frontend .env
 # .(41115.02 11/15/24 RAM 12:30p| Update AnyLLM and ALTools
 # .(41116.03 11/16/24 RAM 11:40a| Add -bdf, for bDebug, bDoit, bForce
+# .(41114.02 11/17/24 RAM  5:45p| Fix setIPAddr for Mac and Unix
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -59,6 +60,7 @@
   aVer="v0.05.41114.1030"  # run-anyllm.sh
   aVer="v0.05.41115.1230"  # run-anyllm.sh
   aVer="v0.05.41116.1140"  # run-anyllm.sh
+  aVer="v0.05.41117.1745"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -146,7 +148,7 @@ function getBinVersion() {                                                      
 
 function get_subnet_ip() {
    local pattern=$1
-   for ip in "${ips[@]}"; do
+   for ip in "${mIPs[@]}"; do
        if [[ $ip =~ $pattern ]]; then
            echo "$ip"
            return 0
@@ -155,19 +157,28 @@ function get_subnet_ip() {
    return 1
    }
 
-function setIPAddr() {                                                                  #.(41114.02.1 RAM Write setIPAddr)
+function setIPAddr() {                                                                  # .(41114.02.1 RAM Write setIPAddr)
    if [ "${aOS}" != "windows" ]; then
-         mapfile -t ips < <( ifconfig | awk '/inet/ { print substr( $0, 40 )}' )
+                     mIPs=( $( ifconfig | awk '/inet / { print substr( $0,  7 ) }' ) )  # .(41114.02.2 RAM For Mac)
        else
-         mapfile -t ips < <( ipconfig | awk '/IPv4/ { print substr( $0, 40 )}' )
-         fi
+   if [ "${aOS}" == "windows" ]; then
+         mapfile  -t mIPs < <( ipconfig | awk '/IPv4 / { print substr( $0, 40 ) }' )
+       else                                                                             # .(41114.02.3 RAM For Unix)
+         mapfile  -t mIPs < <( ifconfig | awk '/inet / { print substr( $0,  7 ) }' )    # .(41114.02.4)
+         fi; fi                                                                         # .(41114.02.5)
+
          aIPAddr="$( get_subnet_ip "^192\.168\." || \
                      get_subnet_ip "^10\.0\.0\." || \
                      get_subnet_ip "^172\."      || \
                               echo  "127.0.0.1" )"
+
        echo "  Setting ./frontend/.env IP Address to ${aIPAddr}"
-       sed -i "/^[[:space:]]*SERVER_IP=/ c\  SERVER_IP=${aIPAddr}" ./frontend/.env
-       }                                                                                #.(41114.02.1 End)
+   if [ "${aOS}" == "darwin" ]; then                                                    # .(41114.02.6)
+       sed -i '' "s/^[[:space:]]*SERVER_IP=.*/  SERVER_IP=${aIPAddr}/" ./frontend/.env  # .(41114.02.7)
+     else                                                                               # .(41114.02.8)
+       sed -i    "/^[[:space:]]*SERVER_IP=/ c\  SERVER_IP=${aIPAddr}" ./frontend/.env
+       fi                                                                               # .(41114.02.9)
+       }                                                                                # .(41114.02.1 End)
 # ---------------------------------------------------------------------------
 
 function showPorts() {
@@ -266,9 +277,9 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
 # ---------------------------------------------------------------------------
 
           aArg1=$1; aArg2=$2; aArg3=$3;  aCmd="help"
-  if [ "${aArg1:0:5}" == "setup" ]; then aCmd="setup";    fi
-  if [ "${aArg1:0:3}" == "ver"   ]; then aCmd="version";  fi                            # .(411112.03.2)
-  if [ "${aArg1:0:3}" == "sou"   ]; then aCmd="source";   fi                            # .(411112.03.5)
+  if [ "${aArg1:0:5}" == "set" ]; then aCmd="setup";   fi
+  if [ "${aArg1:0:3}" == "ver" ]; then aCmd="version"; fi                               # .(411112.03.2)
+  if [ "${aArg1:0:3}" == "sou" ]; then aCmd="source";  fi                               # .(411112.03.5)
 
   if [ "${aArg1:0:3}" == "cop" ] && [ "${aArg2:0:3}" == "env" ]; then aCmd="copyEnvs";  fi
 
@@ -289,6 +300,8 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
   if [ "${aArg1:0:3}" == "sho" ] && [ "${aArg2:0:3}" == "por" ]; then aCmd="showPorts"; fi
 
   if [ "${aArg1:0:3}" == "upd" ];                                then aCmd="update"; fi # .(41115.01.2)
+
+# echo "  aCmd: '${aCmd}', aArg1: '${aArg1}', aArg2: '${aArg2}', aArg3: '${aArg3}', bDoit: '${bDoit}', bDebug: '${bDebug}', bForce: '${bForce}', aArgFlags: '${aArgFlags}'"; exit
 
 # ---------------------------------------------------------------------------
 
@@ -333,7 +346,9 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
 # ---------------------------------------------------------------------------
 
   if [ "${aCmd}" == "setup" ]; then
+
      cd "${aRepoDir}"
+     echo "  pwd: '${aRepoDir}'"
      yarn setup
      fi
 # ---------------------------------------------------------------------------
