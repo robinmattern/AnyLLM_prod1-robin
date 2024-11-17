@@ -12,6 +12,7 @@
 ##FD   run-anyllm.sh            |   5486| 11/11/24 19:08|      | v1.05`41111.1908
 ##FD   set-anyllm.sh            |  17748| 11/12/24 08:36|   322| v1.05`41112.0830
 ##FD   set-anyllm.sh            |  19279| 11/14/24 10:30|   354| v1.05`41114.1030
+##FD   set-anyllm.sh            |  22489| 11/16/24 11:40|   405| v1.05`41115.1140
 ##FD   run-anyllm.sh            |       |               |      |
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
@@ -41,6 +42,7 @@
 # .(41111.06 11/09/24 RAM  7:08p| Allow anyllm to run from anywhere
 # .(41112.03 11/12/24 RAM  8:30a| Add version and source
 # .(41114.02 11/14/24 RAM 10:30a| Write and use setIPAddr for frontend .env
+# .(41115.02 11/15/24 RAM 12:30p| Update AnyLLM and ALTools
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -54,6 +56,8 @@
   aVer="v0.05.41111.1908"  # run-anyllm.sh
   aVer="v0.05.41112.0830"  # run-anyllm.sh
   aVer="v0.05.41114.1030"  # run-anyllm.sh
+  aVer="v0.05.41115.1230"  # run-anyllm.sh
+  aVer="v0.05.41116.1140"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -67,6 +71,7 @@ function help() {
      echo "    Show ports         List Program, PID and Port"
      echo "    Kill port {Port}   Kill port number"
      echo "    Version            Show Version and Location"                            # .(41112.03.1)
+     echo "    Update             Update Anything-LLM and ALTools"                      # .(41115.02.1)
 #    echo ""
      exit_wCR
      }
@@ -126,7 +131,8 @@ function getBinVersion() {                                                      
    aRepoDir="${aRepos}/${aProject}${aStgDir}"
    if [ "${aRepo}" == "" ]; then aRepo="${aProject}${aStgDir}"; fi
 
-   if [ "test" == "text" ]; then
+   if [ "${bDebug}" == "1" ]; then
+   echo ""
    echo "  aRepos:   '${aRepos}'"
    echo "  aRepo:    '${aRepo}'"
    echo "  aProject: '${aProject}'"
@@ -136,7 +142,6 @@ function getBinVersion() {                                                      
    fi
    }
 # ---------------------------------------------------------------------------
-   IPv4 Address. . . . . . . . . . . :
 
 function get_subnet_ip() {
    local pattern=$1
@@ -231,22 +236,38 @@ function showPorts() {
      fi
 # ---------------------------------------------------------------------------
 
+while [[ $# -gt 0 ]]; do  # Loop through all arguments                                                      # .(41116.03.1 Add Arg loop Beg)
+    case "$1" in
+        -doit|--doit)    bDoit=1  ;;
+        -debug|--debug)  bDebug=1 ;;
+        -[bdf]*)          [[ "$1" =~ "b" ]] && bDebug=1; [[ "$1" =~ "d" ]] && bDoit=1; [[ "$1" =~ "f" ]] && bForce=1 ;;
+        *)
+         mArgs+=("$( echo "${1:0:3}" | sed 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')"); # mARGs+=("$1")
+         mARGs+=("$1")
+         i=${#mARGs[@]}
+#        sayMsg  "gitR2[181]  \${mARGs[${i}]}: '${mARGs[${i}]}', \$$i: '$1'" 1
+         ;;
+    esac
+    shift
+  done
+    set -- "${mArgs[@]}"  # Restore the command arguments, lower case, three letters                        # .(41116.03.1 End)
+                                                    aArgFlags="-"                                           # .(41116.03.2 RAM Add aArgFlags Beg)
+    if [ "${bDoit}"     == "1" ]; then aArgFlags="${aArgFlags}d"; fi
+    if [ "${bDebug}"    == "1" ]; then aArgFlags="${aArgFlags}b"; fi
+    if [ "${bForce}"    == "1" ]; then aArgFlags="${aArgFlags}f"; fi
+    if [ "${aArgFlags}" == "-" ]; then aArgFlags=""; fi                                                     # .(41116.03.2 End)
+
+# ---------------------------------------------------------------------------
+
     setOSvars
     getRepoDir
 
-    echo ""
- if [ "${aStage}" == "$(pwd)" ]; then
-#if [ "${aStage}" == "" ]; then
-    echo "* You are not in a ${aProj/_\//}_/{Stage} Git Repository"
-    exit_wCR
-  else
-    echo "  RepoDir is: ${aRepoDir}"; #  exit_wCR
-    fi
 # ---------------------------------------------------------------------------
 
           aArg1=$1; aArg2=$2; aArg3=$3;  aCmd="help"
-  if [ "${aArg1:0:5}" == "setup" ]; then aCmd="setup";  fi
+  if [ "${aArg1:0:5}" == "setup" ]; then aCmd="setup";    fi
   if [ "${aArg1:0:3}" == "ver"   ]; then aCmd="version";  fi                            # .(411112.03.2)
+  if [ "${aArg1:0:3}" == "sou"   ]; then aCmd="source";   fi                            # .(411112.03.5)
 
   if [ "${aArg1:0:3}" == "cop" ] && [ "${aArg2:0:3}" == "env" ]; then aCmd="copyEnvs";  fi
 
@@ -262,9 +283,11 @@ function showPorts() {
   if [ "${aArg1:0:3}" == "sto" ] && [ "${aArg2:0:1}" == "s"   ]; then aCmd="stopApp";   aArg3="s"; fi
   if [ "${aArg1:0:3}" == "sto" ] && [ "${aArg2:0:1}" == "a"   ]; then aCmd="stopApp";   aArg3="a"; fi
 
-  if [ "${aArg1:0:3}" == "kil" ];                                then aCmd="killPort";   fi
-  if [ "${aArg1:0:3}" == "kil" ] && [ "${aArg2:0:3}" == "por" ]; then aCmd="killPort";   fi
-  if [ "${aArg1:0:3}" == "sho" ] && [ "${aArg2:0:3}" == "por" ]; then aCmd="showPorts";  fi
+  if [ "${aArg1:0:3}" == "kil" ];                                then aCmd="killPort";  fi
+  if [ "${aArg1:0:3}" == "kil" ] && [ "${aArg2:0:3}" == "por" ]; then aCmd="killPort";  fi
+  if [ "${aArg1:0:3}" == "sho" ] && [ "${aArg2:0:3}" == "por" ]; then aCmd="showPorts"; fi
+
+  if [ "${aArg1:0:3}" == "upd" ];                                then aCmd="update"; fi # .(41115.01.2)
 
 # ---------------------------------------------------------------------------
 
@@ -272,13 +295,40 @@ function showPorts() {
 
 # ---------------------------------------------------------------------------
 
-  if [ "${aCmd}" == "version" ]; then
+  if [ "${aCmd}" == "version" ] || [ "${aCmd}" == "source" ]; then
      getBinVersion "anyllm"                                                             # .(41112.03.2 RAM Use it)
      echo ""                                                                            # .(41112.03.3)
      echo "  anyllm Version:  ${aBinVer}"                                               # .(41112.03.4 RAM Display it)
      echo "  anyllm Script:    ${aBinDir}/anyllm"                                       # .(41112.03.5)
      echo "  anyllm Location: '${aBinFile}'"                                            # .(41112.03.6)
+     exit_wCR
      fi
+# ---------------------------------------------------------------------------
+
+  if [ "${aCmd}" == "update" ]; then                                                    # .(41115.01.3 RAM Write anyllm update command Beg)
+
+     cd "${aRepos}/FRTools_prod2-master"
+     gitr update "${aArgFlags}"                                                                             # .(41116.03.3)
+     echo -e "\n  --------------------------------------------------------------------------------------------------"
+
+     cd "${aRepos}/AnyLLM_prod1-master"
+     gitr update altools ALTools_prod1 "${aArgFlags}"                                                       # .(41116.03.4)
+     echo -e "\n  --------------------------------------------------------------------------------------------------"
+     gitr update master "${aArgFlags}"                                                                      # .(41116.03.5)
+     echo -e "\n  --------------------------------------------------------------------------------------------------"
+
+     exit_wCR
+     fi # eoc update                                                                    # .(41115.01.3 End)
+# ---------------------------------------------------------------------------
+
+    echo ""
+ if [ "${aStage}" == "$(pwd)" ]; then
+#if [ "${aStage}" == "" ]; then
+    echo "* You are not in a ${aProj/_\//}_/{Stage} Git Repository"
+    exit_wCR
+  else
+    echo "  RepoDir is: ${aRepoDir}"; #  exit_wCR
+    fi
 # ---------------------------------------------------------------------------
 
   if [ "${aCmd}" == "setup" ]; then
@@ -348,7 +398,7 @@ function showPorts() {
      fi
   if [ "${nPort}" == "" ]; then echo -e "\n* Please provide an {App}: c, f or s"; exit_wCR; fi
      killPort ${nPort}
-     fi
+     fi # eoc stopApp
 # ---------------------------------------------------------------------------
 
      exit_wCR
