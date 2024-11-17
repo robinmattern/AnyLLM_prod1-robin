@@ -43,6 +43,7 @@
 # .(41112.03 11/12/24 RAM  8:30a| Add version and source
 # .(41114.02 11/14/24 RAM 10:30a| Write and use setIPAddr for frontend .env
 # .(41115.02 11/15/24 RAM 12:30p| Update AnyLLM and ALTools
+# .(41116.03 11/16/24 RAM 11:40a| Add -bdf, for bDebug, bDoit, bForce
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
