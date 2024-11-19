@@ -1,8 +1,9 @@
-/*\ 
+/*\
 ##=========+====================+================================================+
 ##RD        globalJPTs          | Create JPTs module
 ##RFILE    +====================+=======+===============+======+=================+
-##FD   globalJPTs.cjs           |   5204| 11/09/24 20:32|    81| u1.01`41109.2032
+##FD   globalJPTs.cjs           |      0| 11/09/24 20:32|     0| u1.01`41109.2032
+##FD   globalJPTs.cjs           |   3614| 11/19/24 13:40|    69| u1.01`41119.1340
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #           This JavaScript file creates the JPTs module that gets inserted
 #           into AnythingLLM scripts to analyze what's happening.
@@ -13,7 +14,8 @@
 ##FNCS     .--------------------+----------------------------------------------+
 
 ##CHGS     .--------------------+----------------------------------------------+
-# .(41109.14 11/14/24 RAM  8:32p| Move ._2/JPTs to ._2/ALTs   
+# .(41109.14 11/14/24 RAM  8:32p| Move ._2/JPTs to ._2/ALTs
+# .(41119.06 11/19/24 RAM  1:40p| Fix findRootDir ???
                                 |
 ##SRCE     +====================+===============================================+
 \*/
@@ -22,11 +24,13 @@ const path = require( 'path' );                                                 
 const fs   = require( 'fs'   );
 
 function findRootDir(startDir) {
-    let dir = startDir;
+    var dir = startDir.replace( /._2.+/, '' ); if (dir != startDir) { return dir }      // .(41119.06.1 RAM Why is tis now a problem)}
+    var dir = startDir;
     while (!fs.existsSync(path.join( dir, 'package.json') )) {
         const parentDir = path.dirname(dir);
+        console.log( `'${parentDir}' == '${dir}'` )
         if (parentDir === dir) {
-            throw new Error('Could not find project root directory');
+            throw new Error('globalJPTs[29] Could not find project root directory with package.json');
         }
         dir = parentDir;
         }
@@ -43,9 +47,9 @@ Object.defineProperty( global, 'JPTs', {
     get: function() {
     if (!this._JPTs) {
          this._JPTs = require( path.join( aRootDir, '._2/ALTs/Utils/saveAICode.cjs' )); // .(41109.14.4 RAM Was ._2/JPTs).(41012.01.3)
-         this._JPTs.findRootDir = findRootDir                                           // .(41005.02.2 RAM Add findRootDir) 
-         this._JPTs.RootDir = aRootDir 
-         this._JPTs.JPTsDir = aJPTsDir                                                  // .(41005.02.3) 
+         this._JPTs.findRootDir = findRootDir                                           // .(41005.02.2 RAM Add findRootDir)
+         this._JPTs.RootDir = aRootDir
+         this._JPTs.JPTsDir = aJPTsDir                                                  // .(41005.02.3)
          }
   return this._JPTs;
     },
