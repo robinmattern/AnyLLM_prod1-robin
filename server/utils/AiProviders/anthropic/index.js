@@ -156,6 +156,8 @@ class AnthropicLLM {
         const parseErrorMsg = (event) => {
           const error = event?.error?.error;
           if (!!error)
+
+            JPTs.say( `* Anthropic Error: ${error?.type || "unknown"} - ${ (error?.message || "unknown error." ).replace( /.+content.1./, "" ) }` )  // .(41119.09.1 RAM log error)
             return `Anthropic Error:${error?.type || "unknown"} ${
               error?.message || "unknown error."
             }`;
