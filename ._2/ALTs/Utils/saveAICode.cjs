@@ -4,6 +4,8 @@
 ##RFILE    +====================+=======+===============+======+=================+
 ##FD   globalJPTs.cjs           |   5204| 11/09/24 20:32|    81| u1.01`41109.2032
 ##FD   globalJPTs.cjs           |  50881| 11/19/24 14:05|   660| u1.01`41119.1405
+##FD   globalJPTs.cjs           |  53737| 11/20/24 10:10|   673| u1.01`41120.1010
+
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #           This JavaScript file is called from the JPTs module to save
 #           AI scripts while AnythingLLM is running.
@@ -14,9 +16,13 @@
 ##FNCS     .--------------------+----------------------------------------------+
 
 ##CHGS     .--------------------+----------------------------------------------+
+# .(41012.02 10/12/24 RAM  8:55a| Writee parseFncLn()
 # .(41109.14 11/14/24 RAM  8:32p| Move ._2/JPTs to ._2/ALTs
 # .(41119.05 11/19/24 RAM 12:15p| Fix new aPrompt var, say APIkey, mSources lengths
 # .(41005.02 11/19/24 RAM  2:05p| Move setting aRootDir
+# .(41119.07 11/19/24 RAM  4:00p| Add Time to JPTS.say log
+# .(41119.08 11/19/24 RAM  8:48p| Add aFnc and nLine to parseFncLn()
+# .(41119.10 11/20/24 RAM 10:10a| Fix log messages when saving files
                                 |
 ##SRCE     +====================+===============================================+
 \*/
@@ -24,9 +30,9 @@
 const  path      =  require( 'path' );                                                                 // .(40927.04.1 RAM Beg Write global.JPTs.js )
 const  fs        =  require( 'fs'   );
 
-  var  aRootDir  =  JPTs.findRootDir( __dirname )                                   // .(41005.02.14).(41005.02.4)
-//   const { getLLMProvider } = require(             "../../../server/utils/helpers")    //#.(41005.02.15) "../helpers"
-const { getLLMProvider } = require( path.join( aRootDir, "server/utils/helpers" ) ) // .(41005.02.15 RAM Moved)
+  var  aRootDir  =  JPTs.findRootDir( __dirname )                                       // .(41005.02.14).(41005.02.4)
+/onst { getLLMProvider } = require(             "../../../server/utils/helpers")        //#.(41005.02.15) "../helpers"
+const { getLLMProvider } = require( path.join( aRootDir, "server/utils/helpers" ) )     // .(41005.02.15 RAM Moved)
 
 // -------  --------  =  ------------------------------------------------------
 
@@ -40,7 +46,7 @@ const { getLLMProvider } = require( path.join( aRootDir, "server/utils/helpers" 
   var  nColor    =  32   // green
 
 //     var  aRootDir  =  JPTs.findRootDir( __dirname )                                  //#.(41005.02.4).(41005.02.14)
-//     var  aJPTsDir  = `${aRootDir}/._2/ALTs`                                          //#.(41109.14.5 RAM Was ._2/JPTs).(41005.02.1)
+//     var  aJPTsDir  = `${aRootDir}/._2/ALTs`                                          //#.(41109.14.5 RAM Was ._2/JPTs).(41005.02.5)
   var  aDocsDir  = `${aRootDir}/docs/${aApp}/${aModel}/_t${ take( nSession, -3, '0' ) }`
 //                       setDocsDir( 'workspace', aModel, nSession )                    //#.(41002.04.1)
 
@@ -152,262 +158,261 @@ return  aFile
 
 //                             workspace,   sources,  rawHistory,  messages, LLMConnector
 //async function  saveAICodeR_Files(  pWorkspace,  mSources, mRawHistory, mMessages, pLLMConnector, aFnc) { //#.(41003.04.8 RAM Add async).(41003.03.1 RAM Write saveAICodeR_Files Beg)
-function  saveAICodeR_Files(  pWorkspace,  mSources, mRawHistory, mMessages,   pLLMConnector, aFnc ) {    // .(41003.03.1 RAM Write saveAICodeR_Files Beg)
-  var  pLastMessage   =  mRawHistory.slice(-1)[0] || {}                                                // .(41007.02.1)
-  var  aNextMessage   =  mMessages.slice(-1)[0].content
-  var  aProvider      =  Object.entries(pLLMConnector)[0][0]
-  var  pProvider      =  pLLMConnector[ aProvider ]
-       pThread        =  pLLMConnector.queryVector[2]                                                  // .(41007.02.11)
-       JPTs.MsgNo     =  mMessages.filter( a => a.role == 'user').length                               // .(41005.03.1 RAM Save Current Message Number)
-       JPTs.ThreadId  = `t${ `${pLastMessage.thread_id || pThread?.id || 0}`.padStart( 3, '0' ) }`     // .(41007.02.2 RAM Save ThreadId)
+  function  saveAICodeR_Files(  pWorkspace,  mSources, mRawHistory, mMessages,   pLLMConnector, aFnc ) {    // .(41003.03.1 RAM Write saveAICodeR_Files Beg)
+       var  pLastMessage   =  mRawHistory.slice(-1)[0] || {}                                                // .(41007.02.1)
+       var  aNextMessage   =  mMessages.slice(-1)[0].content
+       var  aProvider      =  Object.entries(pLLMConnector)[0][0]
+       var  pProvider      =  pLLMConnector[ aProvider ]
+            pThread        =  pLLMConnector.queryVector[2]                                                  // .(41007.02.11)
+            JPTs.MsgNo     =  mMessages.filter( a => a.role == 'user').length                               // .(41005.03.1 RAM Save Current Message Number)
+            JPTs.ThreadId  = `t${ `${pLastMessage.thread_id || pThread?.id || 0}`.padStart( 3, '0' ) }`     // .(41007.02.2 RAM Save ThreadId)
 //     var  mQueryVector   =  await pLLMConnector.embedTextInput( aNextMessage ) // input );                //#.(41003.04.9)
-       pWorkspace.model        =  pLLMConnector.model
-       pWorkspace.temperature  =  pWorkspace?.openAiTemp ?? pProvider.defaultTemp
-
+            pWorkspace.model        =  pLLMConnector.model
+            pWorkspace.temperature  =  pWorkspace?.openAiTemp ?? pProvider.defaultTemp
 
 //     var  aSystemMessage = mMessages[0].content
-       say( " ", aFnc )                                                                                // .(41003.03.3)
-       say( `Thread.Msg:            ${ JPTs.ThreadId }.${ `${ JPTs.MsgNo }`.padStart( 2, '0' ) }` )    // .(41007.02.3)
-       say( `pWorkspace.id:         ${`s${ `${pWorkspace.id}`.padStart( 2, '0' ) }` }` )               // .(41007.02.12)
-       say( `pWorkspace.name:       ${ pWorkspace.name }` )
-       say( `pWorkspace.documents:  ${ pWorkspace.documents.length }` )
-       say( `mQueryVector.length:   ${ pLLMConnector.queryVector[1].length }` )                        // .(41004.01.2 RAM Add topN).(41003.04.10 RAM Was mQueryVector)
-       say( `mSources.length:       ${ mSources.length } of ${ pWorkspace.topN }` )                    // .(41004.01.6 RAM Didn't need to add it)
+            say( " ", aFnc )                                                                                // .(41003.03.3)
+            say( `Thread.Msg:            ${ JPTs.ThreadId }.${ `${ JPTs.MsgNo }`.padStart( 2, '0' ) }` )    // .(41007.02.3)
+            say( `pWorkspace.id:         ${`s${ `${pWorkspace.id}`.padStart( 2, '0' ) }` }` )               // .(41007.02.12)
+            say( `pWorkspace.name:       ${ pWorkspace.name }` )
+            say( `pWorkspace.documents:  ${ pWorkspace.documents.length }` )
+            say( `mQueryVector.length:   ${ pLLMConnector.queryVector[1].length }` )                        // .(41004.01.2 RAM Add topN).(41003.04.10 RAM Was mQueryVector)
+            say( `mSources.length:       ${ mSources.length } of ${ pWorkspace.topN }` )                    // .(41004.01.6 RAM Didn't need to add it)
 //          say( `mSources.texts.length: ${ mSources.map( ( { text } ) => text ).length }` )                //#.(41119.05.1) contextTexts
-       say( `mSources.texts.length: ${ mSources.map( ( { text } ) => text.length ).join() }` )         // .(41119.05.1 RAM Get length of each each source text)
+            say( `mSources.texts.length: ${ mSources.map( ( { text } ) => text.length ).join() }` )         // .(41119.05.1 RAM Get length of each each source text)
 //          say( `pLastMessage.thread:   ${ pLastMessage.thread }` )                                        //#.(41007.02.13)
 //          say( `pLastMessage.thread:   ${ pLastMessage.thread_id || 'thread_id' }: ${pThread.id} - '${ pThread.name || '' }'` )   //#.(41007.02.13)
-       say( `pLastMessage.thread:   ${ JPTs.ThreadId }: '${ pThread?.name || '' }'` )                  // .(41007.02.13)
-       say( `mRawHistory.length:    ${ mRawHistory.length } of ${ mMessages.length }` )
+            say( `pLastMessage.thread:   ${ JPTs.ThreadId }: '${ pThread?.name || '' }'` )                  // .(41007.02.13)
+            say( `mRawHistory.length:    ${ mRawHistory.length } of ${ mMessages.length }` )
 //          say( `mMessages.length:      ${ mMessages.length }` )
-       say( `aSystemMessage.length: ${ mMessages[0].content.length }` )
-       say( `aNextMessage:          ${ aNextMessage }` )
-       say( `aProvider:             ${ aProvider }` )
-       say( `pProvider.baseURL:     ${ pProvider.baseURL }` ); var aAPIkey = pProvider.apiKey          // .(41119.05.2)
-       say( `pProvider.apiKey:      ${ aAPIkey.slice(0,25) + '...' + aAPIkey.slice(-20) }` )           // .(41119.05.3)
-       say( `pLLMConnector.model:   ${ pLLMConnector.model }` )
-
-       say( "" )                                                                                       // .(41003.03.4)
+            say( `aSystemMessage.length: ${ mMessages[0].content.length }` )
+            say( `aNextMessage:          ${ aNextMessage }` )
+            say( `aProvider:             ${ aProvider }` );           var aAPIkey = pProvider.apiKey        // .(41119.05.2)
+            say( `pProvider.apiKey:      ${ aAPIkey.slice(0,25) + '...' + aAPIkey.slice(-20) }` )           // .(41119.05.3)
+            say( `pLLMConnector.model:   ${ pLLMConnector.model }` )
+            say( `pProvider.baseURL:     ${ pProvider.baseURL }` );
+            say( "" )                                                                                       // .(41003.03.4)
 //          say( `Received prompt: '${ aNextMessage}'.`, aFnc )                                             // .(41003.03.5)
 //          saveSystMsg( mMessages[0] )                                                                     // .(41007.01.1 RAM Don't doit here, only Anthropic)
-       savePrompt(   aNextMessage, pWorkspace, pThread, aFnc, fncLn() )                                // .(41007.02.14 RAM was pLastMessage.thread).(41004.02.1).(41003.03.6)
-       saveSources(  mSources,     pLLMConnector.queryVector, fncLn() )                                // .(41003.03.7)
-       saveMessages( mMessages, JPTs.fncLn() )                                                         // .(41003.03.8)
-       saveProviderReq( aProvider, pWorkspace, mMessages, fncLn() )                                    // .(41003.03.9)
-       } // eof saveAICodeR_Files                                                                      // .(41003.03.1 End)
+//          savePrompt(   aNextMessage, pWorkspace, pThread, aFnc, fncLn() )                                //#.(41119.10.1).(41007.02.14 RAM was pLastMessage.thread).(41004.02.1).(41003.03.6)
+            savePrompt(   aNextMessage, pWorkspace, pThread, aFnc, fncLn( 'savePrompt' ) )                  // .(41119.10.2).(41007.02.14 RAM was pLastMessage.thread).(41004.02.1).(41003.03.6)
+            saveSources(  mSources,     pLLMConnector.queryVector, fncLn( 'saveSources' ) )                 // .(41119.10.3).(41003.03.7)
+            saveMessages( mMessages,                               fncLn( 'saveMessages' ) )                // .(41119.10.4).(41003.03.8)
+            saveProviderReq( aProvider, pWorkspace, mMessages,     fncLn( 'saveProviderReq' ) )             // .(41119.10.5).(41003.03.9)
+            } // eof saveAICodeR_Files                                                                      // .(41003.03.1 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveSystMsg( pMessage, aFnc ) {                                                                 // .(41005.08.1 RAM Write saveSystMsg Beg)
-  var  aFile     =  fmtFile( JPTs.MsgNo, 1, 'systmsg_.txt' )
-  var  aText     =  pMessage.content
-  var  aCnt      =  take( aText.length, -5 )
-                    fs.writeFileSync( path.join( aDocsDir, aFile), aText );
-                    say( `Saving ${ aCnt } char system msg in: './${ aFile }'`, aFnc )
-       }                                                                                               // .(41005.8.1 End)
+  function  saveSystMsg( pMessage, aFnc ) {                                                                 // .(41005.08.1 RAM Write saveSystMsg Beg)
+       var  aFile     =  fmtFile( JPTs.MsgNo, 1, 'systmsg_.txt' )
+       var  aText     =  pMessage.content
+       var  aCnt      =  take( aText.length, -5 )
+                         fs.writeFileSync( path.join( aDocsDir, aFile), aText );
+                         say( `Saving ${ aCnt } char system msg in: './${ aFile }'`, aFnc )
+            }                                                                                               // .(41005.8.1 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  savePrompt(  aPrompt, pWorkspace, pThread, aFnc, aFnc2 ) {                                      // .(41004.02.2 RAM Add aFnc2).(41002.03.x RAM Add pWorkspace).(41001.06.x).(40929.01.1 RAM Write savePrompt Beg)
-                if (pWorkspace != 'workspace') { setDocsDir( pWorkspace, aModel, pThread, aFnc ) }     // .(41002.04.4 RAM Reset aDocsDir).(41002.04.3 RAM setApp and aDocsDir)
-               var  aPrompt   = (typeof(aPrompt) == 'object' ) ? aPrompt[0].text : aPrompt             // .(41119.05.4 RAM Is aPrompt an object)
-               var  aPrompt2  = (aPrompt + "\n ").replace( /\n.+/s, aPrompt.match( /\n/ ) ? " ..." : "" )                    // .(40930.05.1 RAM Split line)
-//                       say( `Prompt: '${ aPrompt2.length < 106 ? aPrompt2 : `${ aPrompt2.slice(0,102)} ...` }'`, aFnc         ) //#.(41004.02.3 RAM apiChatHandler.js[266]).(40930.05.2)
-                    say( `Prompt:     '${ aPrompt2.length < 106 ? aPrompt2 : `${ aPrompt2.slice(0,102)} ...` }'`, aFnc2    ) // .(41004.02.3 RAM saveAICode.cjs[ 75]).(40930.05.2)
-//                       say( `Prompt: '${ aPrompt2.length < 106 ? aPrompt2 : `${ aPrompt2.slice(0,102)} ...` }'`, JPTs.fncLn() ) //#.(41004.02.3 RAM saveAICode.cjs[167]).(40930.05.2)
-//                       say( `Prompt: '${ aPrompt2.length < 106 ? aPrompt2 : `${ aPrompt2.slice(0,102)} ...` }'`               ) //#.(41004.02.3 RAM saveAICode.cjs[167]).(40930.05.2)
+  function  savePrompt(  aPrompt, pWorkspace, pThread, aFnc, aFnc2 ) {                                      // .(41004.02.2 RAM Add aFnc2).(41002.03.x RAM Add pWorkspace).(41001.06.x).(40929.01.1 RAM Write savePrompt Beg)
+        if (pWorkspace != 'workspace') { setDocsDir( pWorkspace, aModel, pThread, aFnc ) }                  // .(41002.04.4 RAM Reset aDocsDir).(41002.04.3 RAM setApp and aDocsDir)
+       var  aPrompt   = (typeof(aPrompt) == 'object' ) ? aPrompt[0].text : aPrompt                          // .(41119.05.4 RAM Is aPrompt an object)
+       var  aPrompt2  = (aPrompt + "\n ").replace( /\n.+/s, aPrompt.match( /\n/ ) ? " ..." : "" )           // .(40930.05.1 RAM Split line)
+//          say( `Prompt: '${ aPrompt2.length < 106 ? aPrompt2 : `${ aPrompt2.slice(0,102)} ...` }'`, aFnc         ) //#.(41004.02.3 RAM apiChatHandler.js[266]).(40930.05.2)
+            say( `Prompt:     '${ aPrompt2.length < 106 ? aPrompt2 : `${ aPrompt2.slice(0,102)} ...` }'`, aFnc2    ) // .(41004.02.3 RAM saveAICode.cjs[ 75]).(40930.05.2)
+//          say( `Prompt: '${ aPrompt2.length < 106 ? aPrompt2 : `${ aPrompt2.slice(0,102)} ...` }'`, JPTs.fncLn() ) //#.(41004.02.3 RAM saveAICode.cjs[167]).(40930.05.2)
+//          say( `Prompt: '${ aPrompt2.length < 106 ? aPrompt2 : `${ aPrompt2.slice(0,102)} ...` }'`               ) //#.(41004.02.3 RAM saveAICode.cjs[167]).(40930.05.2)
 //     var  aFile     =  fmtFile( 1, 1, 'usermsg_.txt' )
-  var  aText     =  aPrompt
+       var  aText     =  aPrompt
 
 //                       JPTs.prompt = aText; JPTs.fnc = aFnc                                               // .(41001.06.x).(40929.01.2 RAM Save for later)
 //     var  nMsgs     =  mMessages.filter( a => a.role == 'user').length                                    //#.(41005.03.1 RAM nMsgs = Current Message Number)
-  var  aFile     =  fmtFile( JPTs.MsgNo, 1, 'usermsg_.txt' )                                           // .(41005.03.2 RAM Was nMsgs)
-  var  aCnt      =  take( aText.length, -5 )                                                           // .(41001.02.1 RAM Use aCnt)
-                    fs.writeFileSync(   path.join( aDocsDir, aFile), aText );                          // .(40929.02.1 End)
-//                       say( `Saving ${ aCnt } prompt chars    in: '${ aFile }) }'`, JPTs.fnc )            //#.(41001.06.x RAM Add JPTs.fnc).(41001.02.2).(40930.01.1 RAM Modify msg)
-                    say( `Saving ${ aCnt } prompt chars    in: './${ aFile }'`, aFnc )                 // .(41001.06.x RAM Add aFnc).(41001.02.2).(40930.01.1 RAM Modify msg)
-       }                                                                                               // .(40929.01.1 End)
+       var  aFile     =  fmtFile( JPTs.MsgNo, 1, 'usermsg_.txt' )                                           // .(41005.03.2 RAM Was nMsgs)
+       var  aCnt      =  take( aText.length, -5 )                                                           // .(41001.02.1 RAM Use aCnt)
+                         fs.writeFileSync(   path.join( aDocsDir, aFile), aText );                          // .(40929.02.1 End)
+//          say( `Saving ${ aCnt } prompt chars    in: '${ aFile }) }'`, JPTs.fnc )                         //#.(41001.06.x RAM Add JPTs.fnc).(41001.02.2).(40930.01.1 RAM Modify msg)
+            say( `Saving ${ aCnt } prompt chars    in: './${ aFile }'`, aFnc )                              // .(41001.06.x RAM Add aFnc).(41001.02.2).(40930.01.1 RAM Modify msg)
+            }                                                                                               // .(40929.01.1 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveSources( mSources, mQueryVector, aFnc  ) {                                                  // .(41001.05.x).(40927.04.6 RAM Write saveSources Beg)
-  var  aFile     =  fmtFile( 0,     1, 'sources_.json' )                                               // .(40929.02.3 Beg)
-  var  aText     =  JSON.stringify( mSources, '', 4 )                                                  // .(41005.07.1 RAM was : .join( "\n" )
-  var  aCnt      =  take( mSources.length,  -5 )                                                       // .(41001.02.3)
-  var  nTop      =  mQueryVector ? mQueryVector[0] : 0                                                 // .(41004.01.3 RAM Add topN).
-  var  aVector   =  mQueryVector ? ` of ${mQueryVector[1].length} numbers in queryVector` : ''         // .(41004.01.4)
-                    fs.writeFileSync( path.join( aDocsDir, aFile), aText )                             // .(40929.02.3 End)
-  var  aMsg      = `${mSources.length} of ${nTop} source documents in similarity search${aVector}.`    // .(41004.01.5).(41003.06.1)
-//                       say( `sourceDocuments: ${aMsg}`, aFnc )                                            // .(41003.06.2 RAM).(40927.02.13)
-                    say( `Found ${aMsg}`, aFnc )                                                       // .(41003.06.2 RAM).(40927.02.13)
-                    say( `Saving ${ aCnt } source items    in: './${ aFile }'`, aFnc )                 // .(41003.06.3).(41001.05.x).(40930.01.3)
-       }                                                                                               // .(40927.04.6 End)
+  function  saveSources( mSources, mQueryVector, aFnc  ) {                                                  // .(41001.05.x).(40927.04.6 RAM Write saveSources Beg)
+       var  aFile     =  fmtFile( 0,     1, 'sources_.json' )                                               // .(40929.02.3 Beg)
+       var  aText     =  JSON.stringify( mSources, '', 4 )                                                  // .(41005.07.1 RAM was : .join( "\n" )
+       var  aCnt      =  take( mSources.length,  -5 )                                                       // .(41001.02.3)
+       var  nTop      =  mQueryVector ? mQueryVector[0] : 0                                                 // .(41004.01.3 RAM Add topN).
+       var  aVector   =  mQueryVector ? ` of ${mQueryVector[1].length} numbers in queryVector` : ''         // .(41004.01.4)
+                         fs.writeFileSync( path.join( aDocsDir, aFile), aText )                             // .(40929.02.3 End)
+       var  aMsg      = `${mSources.length} of ${nTop} source docs     in similarity search${aVector}.`     // .(41004.01.5).(41003.06.1)
+/                             say( `sourceDocuments: ${aMsg}`, aFnc )                                            // .(41003.06.2 RAM).(40927.02.13)
+                         say( `Found ${aMsg}`, aFnc )                                                       // .(41003.06.2 RAM).(40927.02.13)
+                         say( `Saving ${ aCnt } source items    in: './${ aFile }'`, aFnc )                 // .(41003.06.3).(41001.05.x).(40930.01.3)
+            }                                                                                               // .(40927.04.6 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveMessages( mMessages, aFnc ) {                                                               // .(41001.01.3 RAM Add aFncLn).(40927.04.7 RAM Write saveMessages)
-   if (JPTs.prompt) {                                                                                  // .(41001.05.1 RAM May not be set)
-  var  nMsgs     =  mMessages.filter( a => a.role == 'user').length                                    // .(40929.02.1 RAM Save prompt file Beg)
-  var  aFile     =  fmtFile( nMsgs, 1, 'usermsg_.txt' )
-  var  aText     =  JPTs.prompt
-  var  aCnt      =  take( aText.length, -5 )                                                           // .(41001.02.1 RAM Use aCnt)
-                    fs.writeFileSync(   path.join( aDocsDir, aFile), aText );                          // .(40929.02.1 End)
-//                       say( `Saving ${ aCnt } prompt chars    in: './${ aFile }'`, JPTs.fnc )             //#.(41001.06.x RAM Add JPTs.fnc).(41001.02.2).(40930.01.1 RAM Modify msg)
-                    say( `Saving ${ aCnt } prompt chars    in: './${ aFile }'`, aFnc )                 // .(41001.06.x RAM Add aFnc).(41001.02.2).(40930.01.1 RAM Modify msg).(40929.02.1 End)
-       }                                                                                               // .(41001.05.2)
-  var  aMsg      = `system msg: ${ mMessages.filter( a => a.role == 'system'   ).length },`            // .(41001.01.x)
-                 + ` user msgs: ${ mMessages.filter( a => a.role == 'user'     ).length }, `
-                 + `model msgs: ${ mMessages.filter( a => a.role == 'assistant').length }`
-                    say( `Using ${aMsg}`, aFnc )                                                       // .(41001.04.x).(41001.01.5)
+  function  saveMessages( mMessages, aFnc ) {                                                               // .(41001.01.3 RAM Add aFncLn).(40927.04.7 RAM Write saveMessages)
+        if (JPTs.prompt) {                                                                                  // .(41001.05.1 RAM May not be set)
+       var  nMsgs     =  mMessages.filter( a => a.role == 'user').length                                    // .(40929.02.1 RAM Save prompt file Beg)
+       var  aFile     =  fmtFile( nMsgs, 1, 'usermsg_.txt' )
+       var  aText     =  JPTs.prompt
+       var  aCnt      =  take( aText.length, -5 )                                                           // .(41001.02.1 RAM Use aCnt)
+                         fs.writeFileSync(   path.join( aDocsDir, aFile), aText );                          // .(40929.02.1 End)
+//                            say( `Saving ${ aCnt } prompt chars    in: './${ aFile }'`, JPTs.fnc )             //#.(41001.06.x RAM Add JPTs.fnc).(41001.02.2).(40930.01.1 RAM Modify msg)
+                         say( `Saving ${ aCnt } prompt chars    in: './${ aFile }'`, aFnc )                 // .(41001.06.x RAM Add aFnc).(41001.02.2).(40930.01.1 RAM Modify msg).(40929.02.1 End)
+            }                                                                                               // .(41001.05.2)
+       var  aMsg      = `system msg: ${ mMessages.filter( a => a.role == 'system'   ).length },`            // .(41001.01.x)
+                      + ` user msgs: ${ mMessages.filter( a => a.role == 'user'     ).length }, `
+                      + `model msgs: ${ mMessages.filter( a => a.role == 'assistant').length }`
+                         say( `Using ${aMsg}`, aFnc )                                                       // .(41001.04.x).(41001.01.5)
 
-  var  aFile     =  fmtFile(  0,    2, 'messages.json' )                                               // .(40929.02.2 RAM Save messages file Beg)
-  var  aText     =  JSON.stringify( mMessages, null, 4 )
-  var  aText     =  aText.replace( /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '+' )                     // .(41008.07.1 RAM ?? )
-  var  aCnt      =  take( mMessages.length, -5 )                                                       // .(41001.02.2)
-//     say(`Messages: ${ Object.entries( pMessages ).length } entries`)
-//     say(`Messages: ${ mMessages.length } items`)
-                    fs.writeFileSync(   path.join( aDocsDir, aFile), aText )                           // .(40929.02.2 End)
-                    say( `Saving ${ aCnt } prompt messages in: './${ aFile }'`, aFnc )                 // .(41001.05.x).(41001.02.x).(40930.01.2)
-       JPTs.setTime()                                                                                  // .(41003.01.2 RAM Put it here too)
-       }                                                                                               // .(40927.04.1 End)
+       var  aFile     =  fmtFile(  0,    2, 'messages.json' )                                               // .(40929.02.2 RAM Save messages file Beg)
+       var  aText     =  JSON.stringify( mMessages, null, 4 )
+       var  aText     =  aText.replace( /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '+' )                     // .(41008.07.1 RAM ?? )
+       var  aCnt      =  take( mMessages.length, -5 )                                                       // .(41001.02.2)
+//          say(`Messages: ${ Object.entries( pMessages ).length } entries`)
+//          say(`Messages: ${ mMessages.length } items`)
+                         fs.writeFileSync(   path.join( aDocsDir, aFile), aText )                           // .(40929.02.2 End)
+                         say( `Saving ${ aCnt } prompt messages in: './${ aFile }'`, aFnc )                 // .(41001.05.x).(41001.02.x).(40930.01.2)
+            JPTs.setTime()                                                                                  // .(41003.01.2 RAM Put it here too)
+            }                                                                                               // .(40927.04.1 End)
 // -------  --------  =  ------------------------------------------------------
 
 //function  saveRequest( pRequest, aURL  ) {                                                                //#.(40927.04.8 RAM Write saveRequest Beg).(41001.05.x)
-function  saveRequest( pRequest, aFnc ) {                                                                 // .(41001.05.x).(40927.04.8 RAM Write saveRequest Beg)
-  var  aFile     =  fmtFile( 0,     2, 'request_.json' )                                               // .(40929.02.4 Beg)
-  var  pRequest2 =  Object.assign( {}, pRequest); pRequest2.messages = "{messages}"
-//     var  aText     =  JSON.stringify( { API_URL: aURL, ...pRequest2 }, null, 4 )                         //#.(41001.05.x)
-  var  aText     =  JSON.stringify(                     pRequest2  , null, 4 )                         // .(41001.05.x)
-  var  aCnt      =  take( Object.entries( pRequest ).length, -5 )                                      // .(41001.02.4)
-                    fs.writeFileSync( path.join( aDocsDir, aFile), aText )                             // .(40929.02.4 End)
-                    say( `Saving ${ aCnt } request entries in: './${ aFile }'`, aFnc)                  // .(40930.01.4)
-                    JPTs.setTime()                                                                     // .(41003.01.1)
-       }                                                                                               // .(40927.04.8 End)
+  function  saveRequest( pRequest, aFnc ) {                                                                 // .(41001.05.x).(40927.04.8 RAM Write saveRequest Beg)
+       var  aFile     =  fmtFile( 0,     2, 'request_.json' )                                               // .(40929.02.4 Beg)
+       var  pRequest2 =  Object.assign( {}, pRequest); pRequest2.messages = "{messages}"
+//          var  aText     =  JSON.stringify( { API_URL: aURL, ...pRequest2 }, null, 4 )                         //#.(41001.05.x)
+       var  aText     =  JSON.stringify(                     pRequest2  , null, 4 )                         // .(41001.05.x)
+       var  aCnt      =  take( Object.entries( pRequest ).length, -5 )                                      // .(41001.02.4)
+                         fs.writeFileSync( path.join( aDocsDir, aFile), aText )                             // .(40929.02.4 End)
+                         say( `Saving ${ aCnt } request entries in: './${ aFile }'`, aFnc)                  // .(40930.01.4)
+                         JPTs.setTime()                                                                     // .(41003.01.1)
+            }                                                                                               // .(40927.04.8 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveResponse( aResponse, aFnc ) {                                                               // .(41001.03.x).(40927.04.9 RAM Write saveResponse Beg)
-  var  aFile     =  fmtFile( 0,     3, 'response.md' )                                                 // .(40929.02.5 Beg)
-  var  aText     =  aResponse
-  var  aCnt      =  take( aResponse.length, -5 )                                                       // .(41001.02.4)
-//                       await import('fs').then( fs => fs.promises.writeFile( path( aPath, aFile) , aText));
-  var  nDuration = ( (new Date).getTime() - JPTs.BegTime ) / 1000                                      // .(41005.04.1)
-       aText    += `### Model Response:\n\n${aText}\n\n`                                               // .(41008.01.1 RAM)
-                 + `### Model Stats:\n - Duration: ${nDuration} secs\n`                                // .(41008.01.2).(41005.04.2 RAM Put duration in response file)
-//                    + ` - Input Tokens:  ${nInput_tokens}\n`                                              //#.(41008.01.3 RAM Can't get)
-//                    + ` - Output Tokens: ${nOutput_tokens}n\`                                             //#.(41008.01.4)
+  function  saveResponse( aResponse, aFnc ) {                                                               // .(41001.03.x).(40927.04.9 RAM Write saveResponse Beg)
+       var  aFile     =  fmtFile( 0,     3, 'response.md' )                                                 // .(40929.02.5 Beg)
+       var  aText     =  aResponse
+       var  aCnt      =  take( aResponse.length, -5 )                                                       // .(41001.02.4)
+//                            await import('fs').then( fs => fs.promises.writeFile( path( aPath, aFile) , aText));
+       var  nDuration = ( (new Date).getTime() - JPTs.BegTime ) / 1000                                      // .(41005.04.1)
+            aText    += `### Model Response:\n\n${aText}\n\n`                                               // .(41008.01.1 RAM)
+                      + `### Model Stats:\n - Duration: ${nDuration} secs\n`                                // .(41008.01.2).(41005.04.2 RAM Put duration in response file)
+//                         + ` - Input Tokens:  ${nInput_tokens}\n`                                              //#.(41008.01.3 RAM Can't get)
+//                         + ` - Output Tokens: ${nOutput_tokens}n\`                                             //#.(41008.01.4)
 
-                    fs.writeFileSync( path.join( aDocsDir, aFile), aText )                             // .(40929.02.5 End)
-                    say(`Saving ${ aCnt } response chars  in: './${ aFile }'`, aFnc )                  // .(41001.03.x).(40930.01.5)
-//                       say(`Duration: ${ ((new Date().getTime()) - JPTs.BegTime) / 1000 } secs` )         //#.(41005.04.3).(41003.01.3 RAM Add Duration)
-                    say(`Duration: ${nDuration} secs` )                                                // .(41005.04.3).(41003.01.3 RAM Add Duration)
-       }                                                                                               // .(40927.04.9 End)
+                         fs.writeFileSync( path.join( aDocsDir, aFile), aText )                             // .(40929.02.5 End)
+                         say(`Saving ${ aCnt } response chars  in: './${ aFile }'`, aFnc )                  // .(41001.03.x).(40930.01.5)
+//                            say(`Duration: ${ ((new Date().getTime()) - JPTs.BegTime) / 1000 } secs` )         //#.(41005.04.3).(41003.01.3 RAM Add Duration)
+                         say(`Duration: ${nDuration} secs` )                                                // .(41005.04.3).(41003.01.3 RAM Add Duration)
+            }                                                                                               // .(40927.04.9 End)
 // ------   --------- =  ------------------------------------------------------
 
-function  saveProviderReq( aProvider, pWorkspace, mMessages, aFnc ) {                                     // .(41003.08.1 RAM Write save_CurlReq Beg)
-  var  aTemp     =  pWorkspace.temperature ? ` with temperature: ${pWorkspace.temperature }` : ''
-//                       say( `Submitting request to ${aProvider} model, "${pWorkspace.model}"${aTemp}.`, aFnc )
+  function  saveProviderReq( aProvider, pWorkspace, mMessages, aFnc ) {                                     // .(41003.08.1 RAM Write save_CurlReq Beg)
+       var  aTemp     =  pWorkspace.temperature ? ` with temperature: ${pWorkspace.temperature }` : ''
+//                            say( `Submitting request to ${aProvider} model, "${pWorkspace.model}"${aTemp}.`, aFnc )
 
-//      if (aProvider == "anthropic" ) { saveAnthropic_Request( pWorkspace, mMessages, aFnc ) }             //#.(41005.01.1)
-   if (aProvider == "anthropic" ) { saveAnthro_Request( pWorkspace, mMessages, aFnc ) }                // .(41005.01.1 RAM Shorten name)
-   if (aProvider == "openai"    ) { saveOpenAI_Request( pWorkspace, mMessages, aFnc ) }
-   if (aProvider == "ollama"    ) { saveOllama_Request( pWorkspace, mMessages, aFnc ) }
-       }                                                                                               // .(41003.08.1 End)
+//           if (aProvider == "anthropic" ) { saveAnthropic_Request( pWorkspace, mMessages, aFnc ) }             //#.(41005.01.1)
+        if (aProvider == "anthropic" ) { saveAnthro_Request( pWorkspace, mMessages, aFnc ) }                // .(41005.01.1 RAM Shorten name)
+        if (aProvider == "openai"    ) { saveOpenAI_Request( pWorkspace, mMessages, aFnc ) }
+        if (aProvider == "ollama"    ) { saveOllama_Request( pWorkspace, mMessages, aFnc ) }
+            }                                                                                               // .(41003.08.1 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveAnthro_Request( pWorkspace, mMessages, aFnc ) {                                             // .(41003.08.2 RAM Write saveAnthropic_Request Beg)
-  var  pRequest =
-        { "API_URL"    : "anthropic.messages.create"
-        , "API_KEY"    :  process.env.ANTHROPIC_API_KEY
-        , "model"      :  pWorkspace.model
-        , "max_tokens" :  4096
-        , "stream"     :  true
-        , "messages"   :  mMessages
-        , "temperature":  pWorkspace.temperature
-           }
-       saveSystMsg( mMessages[0] )                                                                     // .(41007.0.12 RAM Not here)
-       saveRequest( pRequest )                                                                         // .(41005.07.x RAM Was: , aFnc)
-       saveAnthro_CurlReq(  pRequest,         aFnc )
-       saveAnthro_NodeReq(  pRequest, '.cjs', aFnc )                                                   // .(41005.04.2 RAM Save 'em both)
-       saveAnthro_NodeReq(  pRequest, '.mjs', aFnc )                                                   //#.(41006.03.9 RAM.(41005.04.1)
-       saveAnthro_FetchReq( pRequest, '.mjs', aFnc )                                                   // .(41006.03.9 RAM Will overwrite Node.mjs script).(41006.01.1)
-       }                                                                                               // .(41003.08.2 End)
+  function  saveAnthro_Request( pWorkspace, mMessages, aFnc ) {                                             // .(41003.08.2 RAM Write saveAnthropic_Request Beg)
+       var  pRequest =
+             { "API_URL"    : "anthropic.messages.create"
+             , "API_KEY"    :  process.env.ANTHROPIC_API_KEY
+             , "model"      :  pWorkspace.model
+             , "max_tokens" :  4096
+             , "stream"     :  true
+             , "messages"   :  mMessages
+             , "temperature":  pWorkspace.temperature
+                }
+            saveSystMsg( mMessages[0] )                                                                     // .(41007.0.12 RAM Not here)
+            saveRequest( pRequest )                                                                         // .(41005.07.x RAM Was: , aFnc)
+            saveAnthro_CurlReq(  pRequest,         aFnc )
+            saveAnthro_NodeReq(  pRequest, '.cjs', aFnc )                                                   // .(41005.04.2 RAM Save 'em both)
+            saveAnthro_NodeReq(  pRequest, '.mjs', aFnc )                                                   //#.(41006.03.9 RAM.(41005.04.1)
+            saveAnthro_FetchReq( pRequest, '.mjs', aFnc )                                                   // .(41006.03.9 RAM Will overwrite Node.mjs script).(41006.01.1)
+            }                                                                                               // .(41003.08.2 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveAnthro_NodeReq( pRequest, aExt, aFnc ) {                                                    // .(41005.04.3 RAM Rewrite saveAnthro_NodeReq Beg).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
-  var  aAppDir   = `server1/${JPTs.AppName}`
-  var  aModel    =         'Claude-35s_Anthropic_node', aMod = 'c35san' + aExt.slice(1,2)
-//     var  aNodeTmpl = 'c35sann_Claude-35s_Anthropic_node-req_u02.2_template'
-  var  aNodeTmpl = `${aMod}_${aModel}-req_u02.2_template`                                              // .(41005.06.14)
-       saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, aExt, JPTs.fncLn() )
-       }                                                                                               // .(41005.04.3 End)
+  function  saveAnthro_NodeReq( pRequest, aExt, aFnc ) {                                                    // .(41005.04.3 RAM Rewrite saveAnthro_NodeReq Beg).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
+       var  aAppDir   = `server1/${JPTs.AppName}`
+       var  aModel    =         'Claude-35s_Anthropic_node', aMod = 'c35san' + aExt.slice(1,2)
+     //     var  aNodeTmpl = 'c35sann_Claude-35s_Anthropic_node-req_u02.2_template'
+       var  aNodeTmpl = `${aMod}_${aModel}-req_u02.2_template`                                              // .(41005.06.14)
+            saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, aExt, JPTs.fncLn() )
+            }                                                                                               // .(41005.04.3 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveAnthro_FetchReq( pRequest, aExt, aFnc ) {                                                   // .(41006.01.2 RAM Write saveAnthro_FetchReq Beg)
-  var  aAppDir   = `server1/${JPTs.AppName}`
-  var  aModel    =         'Claude-35s_Anthropic_fetch', aMod = 'c35sann'
-//     var  aNodeTmpl = 'c35sanf_Claude-35s_Anthropic_fetch-req_u02.2_template'
-  var  aNodeTmpl = `${aMod}_${aModel}-req_u02.2_template`                                              // .(41005.06.14)
-//          aModel    =  aModel.replace( /fetch/, 'node' )                                                  //#.(41006.03.1 RAM Don't Save fetch .json files)
-       saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, aExt, JPTs.fncLn() )
-       }                                                                                               // .(41006.01.2 End)
+  function  saveAnthro_FetchReq( pRequest, aExt, aFnc ) {                                                   // .(41006.01.2 RAM Write saveAnthro_FetchReq Beg)
+       var  aAppDir   = `server1/${JPTs.AppName}`
+       var  aModel    =         'Claude-35s_Anthropic_fetch', aMod = 'c35sann'
+//          var  aNodeTmpl = 'c35sanf_Claude-35s_Anthropic_fetch-req_u02.2_template'
+       var  aNodeTmpl = `${aMod}_${aModel}-req_u02.2_template`                                              // .(41005.06.14)
+//               aModel    =  aModel.replace( /fetch/, 'node' )                                                  //#.(41006.03.1 RAM Don't Save fetch .json files)
+            saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, aExt, JPTs.fncLn() )
+            }                                                                                               // .(41006.01.2 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveAnthro_CurlReq( pRequest, aFnc ) {                                                            // .(41003.08.4 RAM Write saveAnthropic_CurlReq Beg)
-  var  aAppDir   = `server1/${JPTs.AppName}`
-  var  aModel    =         'Claude-35s_Anthropic_curl', aMod = 'c35sanu'
-//     var  aNodeTmpl = 'c35sann_Claude-35s_Anthropic_curl-req_u02.2_template'
-  var  aNodeTmpl = `${aMod}_${aModel}-req_u02.2_template`                                              // .(41005.06.14)
-       saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, '.sh', JPTs.fncLn() )
-       }                                                                                               // .(41003.08.4 End)
+  function  saveAnthro_CurlReq( pRequest, aFnc ) {                                                          // .(41003.08.4 RAM Write saveAnthropic_CurlReq Beg)
+       var  aAppDir   = `server1/${JPTs.AppName}`
+       var  aModel    =         'Claude-35s_Anthropic_curl', aMod = 'c35sanu'
+//          var  aNodeTmpl = 'c35sann_Claude-35s_Anthropic_curl-req_u02.2_template'
+       var  aNodeTmpl = `${aMod}_${aModel}-req_u02.2_template`                                              // .(41005.06.14)
+            saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, '.sh', JPTs.fncLn() )
+            }                                                                                               // .(41003.08.4 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveOllama_Request( aFnc ) {                                                                    // .(41003.08.5 RAM Write saveOllama_Request Beg)
-  var  pRequest =
-        { "API_URL"    : "anthropic.messages.create"
-        , "API_KEY"    :  process.env.ANTHROPIC_API_KEY
-        , "model"      :  this.model
-        , "max_tokens" :  4096
-        , "stream"     :  true
-        , "messages"   :  messages
-        , "temperature":  Number(temperature ?? this.defaultTemp)
-           }
-       saveRequest( pRequest )                                                                         // .(41005.07.x RAM Was: , aFnc)
+  function  saveOllama_Request( aFnc ) {                                                                    // .(41003.08.5 RAM Write saveOllama_Request Beg)
+       var  pRequest =
+             { "API_URL"    : "anthropic.messages.create"
+             , "API_KEY"    :  process.env.ANTHROPIC_API_KEY
+             , "model"      :  this.model
+             , "max_tokens" :  4096
+             , "stream"     :  true
+             , "messages"   :  messages
+             , "temperature":  Number(temperature ?? this.defaultTemp)
+                }
+            saveRequest( pRequest )                                                                         // .(41005.07.x RAM Was: , aFnc)
 //          saveOllama_CurlReq(  pRequest,         aFnc )
-       saveOllama_NodeReq(  pRequest, '.cjs', aFnc )
+            saveOllama_NodeReq(  pRequest, '.cjs', aFnc )
 //          saveOllama_NodeReq(  pRequest, '.mjs', aFnc )                                                   //#.(41006.03.10)
-       saveOllama_FetchReq( pRequest, '.mjs', aFnc )                                                   // .(41006.03.10).(41006.01.3)
-       }                                                                                               // .(41003.08.5 End)
+            saveOllama_FetchReq( pRequest, '.mjs', aFnc )                                                   // .(41006.03.10).(41006.01.3)
+            }                                                                                               // .(41003.08.5 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveOllama_NodeReq( pRequest, aExt, aFnc ) {                                                    // .(41005.04.3 RAM Write).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
-  var  aAppDir   = `server1/${JPTs.AppName}`
-  var  aModel    = 'TinyLlama-11b_ollama_node', aMod = 'tl11ol' + aExt.slice(1,2)
-  var  aModel    = 'LLama31-80b_ollama-node',   aMod = 'li31ol' + aExt.slice(1,2)
-//     var  aNodeTmpl = 'tl11oln_TinyLlama-11b_Ollama_node-req_u01.1_template.mjs'                          // .(41005.06.12)
-//     var  aNodeTmpl = 'll31oln_Llama31-80b_Ollama_node-req_u01.1_template.mjs'                            // .(41005.06.14)
-  var  aNodeTmpl = `${aMod}_${aModel}-req_u01.1_template`                                              // .(41005.06.14)
-       saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, aExt, JPTs.fncLn() )
-       }                                                                                               // .(41005.04.3 End)
+  function  saveOllama_NodeReq( pRequest, aExt, aFnc ) {                                                    // .(41005.04.3 RAM Write).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
+       var  aAppDir   = `server1/${JPTs.AppName}`
+       var  aModel    = 'TinyLlama-11b_ollama_node', aMod = 'tl11ol' + aExt.slice(1,2)
+       var  aModel    = 'LLama31-80b_ollama-node',   aMod = 'li31ol' + aExt.slice(1,2)
+//          var  aNodeTmpl = 'tl11oln_TinyLlama-11b_Ollama_node-req_u01.1_template.mjs'                     // .(41005.06.12)
+//          var  aNodeTmpl = 'll31oln_Llama31-80b_Ollama_node-req_u01.1_template.mjs'                       // .(41005.06.14)
+       var  aNodeTmpl = `${aMod}_${aModel}-req_u01.1_template`                                              // .(41005.06.14)
+            saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, aExt, JPTs.fncLn() )
+            }                                                                                               // .(41005.04.3 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveOllama_FetchReq( pRequest, aExt, aFnc ) {                                                   // .(41006.01.4 RAM Write saveOllama_FetchReq Beg)
+  function  saveOllama_FetchReq( pRequest, aExt, aFnc ) {                                                   // .(41006.01.4 RAM Write saveOllama_FetchReq Beg)
   var  aAppDir   = `server1/${JPTs.AppName}`
   var  aModel    = 'TinyLlama-11b_ollama_fetch', aMod = 'tl11oln'
   var  aModel    = 'LLama31-80b_ollama_fetch',   aMod = 'li31oln'
   var  aNodeTmpl = `${aMod}_${aModel}-req_u02.2_template`
 //          aModel    =  aModel.replace( /fetch/, 'node' )                                                  //#.(41006.03.2)
        saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, aExt, JPTs.fncLn() )
-       }                                                                                               // .(41006.01.4 End)
+       }                                                                                                    // .(41006.01.4 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveOllama_CurlReq( pRequest, aFnc ) {                                                          // .(41005.04.3 RAM Write).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
+function  saveOllama_CurlReq( pRequest, aFnc ) {                                                            // .(41005.04.3 RAM Write).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
   var  aAppDir   = `server1/${JPTs.AppName}`
   var  aModel    = 'TinyLlama-11b_ollama_curl', aMod = "tl11olu"
   var  aModel    = 'LLama31-80b_ollama-curl',   aMod = "li31olu"
 //     var  aNodeTmpl = 'tl11oln_TinyLlama-11b_Ollama_node-req_u01.1_template.mjs'                          // .(41005.06.12)
 //     var  aNodeTmpl = 'll31oln_Llama31-80b_Ollama_node-req_u01.1_template.mjs'                            // .(41005.06.14)
-  var  aNodeTmpl = `${aMod}_${aModel}-req_u01.1_template`                                              // .(41005.06.14)
+  var  aNodeTmpl = `${aMod}_${aModel}-req_u01.1_template`                                                   // .(41005.06.14)
        saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, '.sh', JPTs.fncLn() )
-       }                                                                                               // .(41005.04.3 End)
+       }                                                                                                    // .(41005.04.3 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveOpenAI_Request( aFnc ) {                                                                    // .(41003.08.6 RAM Write saveOpenAI_Request Beg)
+function  saveOpenAI_Request( aFnc ) {                                                                      // .(41003.08.6 RAM Write saveOpenAI_Request Beg)
   var  pRequest =
         { "API_URL"    : "anthropic.messages.create"
         , "API_KEY"    :  process.env.ANTHROPIC_API_KEY
@@ -417,47 +422,47 @@ function  saveOpenAI_Request( aFnc ) {                                          
         , "messages"   :  messages
         , "temperature":  Number(temperature ?? this.defaultTemp)
            }
-       saveRequest( pRequest )                                                                         // .(41005.07.x RAM Was: , aFnc)
+       saveRequest( pRequest )                                                                              // .(41005.07.x RAM Was: , aFnc)
 //          saveOpenAI_CurlReq(  pRequest,         aFnc )
        saveOpenAI_NodeReq(  pRequest, '.cjs', aFnc )
 //          saveOpenAI_NodeReq(  pRequest, '.mjs', aFnc )                                                   //#.(41006.03.11)
-       saveOpenAI_FetchReq( pRequest, '.mjs', aFnc )                                                   // .(41006.03.11).(41006.01.5)
-       }                                                                                               // .(41003.08.6 End)
+       saveOpenAI_FetchReq( pRequest, '.mjs', aFnc )                                                        // .(41006.03.11).(41006.01.5)
+       }                                                                                                    // .(41003.08.6 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveOpenAI_NodeReq( pRequest, aExt, aFnc ) {                                                    // .(41005.04.3 RAM Write).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
+function  saveOpenAI_NodeReq( pRequest, aExt, aFnc ) {                                                      // .(41005.04.3 RAM Write).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
   var  aAppDir   = `server1/${JPTs.AppName}`
   var  aModel    = 'GPT-4o_OpenAI-node', aMod = 'gp4oop' + aExt.slice(1,2)
-  var  aNodeTmpl = `${aMod}_${aModel}-req_u01.1_template`                                              // .(41005.06.14)
+  var  aNodeTmpl = `${aMod}_${aModel}-req_u01.1_template`                                                   // .(41005.06.14)
        saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, aExt, JPTs.fncLn() )
-       }                                                                                               // .(41005.04.3 End)
+       }                                                                                                    // .(41005.04.3 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveOpenAI_FetchReq( pRequest, aExt, aFnc ) {                                                   // .(41006.01.6 RAM Write saveOpenAI_FetchReq Beg)
+function  saveOpenAI_FetchReq( pRequest, aExt, aFnc ) {                                                     // .(41006.01.6 RAM Write saveOpenAI_FetchReq Beg)
   var  aAppDir   = `server1/${JPTs.AppName}`
   var  aModel    = 'GPT-4o_OpenAI-fetch', aMod = 'gp4oon'
   var  aNodeTmpl = `${aMod}_${aModel}-req_u02.2_template`
 //          aModel    =  aModel.replace( /fetch/, 'node' )                                                  //#.(41006.03.3)
        saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, aExt, JPTs.fncLn() )
-       }                                                                                               // .(41006.01.6 End)
+       }                                                                                                    // .(41006.01.6 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveOpenAI_CurlReq( pRequest, aFnc ) {                                                          // .(41005.04.3 RAM Write).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
+function  saveOpenAI_CurlReq( pRequest, aFnc ) {                                                            // .(41005.04.3 RAM Write).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
   var  aAppDir   = `server1/${JPTs.AppName}`
   var  aModel    = 'GPT-4o_OpenAI-curl', aMod = 'gp4oopu'
-  var  aNodeTmpl = `${aMod}_${aModel}-req_u01.1_template`                                              // .(41005.06.14)
+  var  aNodeTmpl = `${aMod}_${aModel}-req_u01.1_template`                                                   // .(41005.06.14)
        saveReqFile( pRequest, aAppDir, aModel, aNodeTmpl, '.sh', JPTs.fncLn() )
-       }                                                                                               // .(41005.04.3 End)
+       }                                                                                                    // .(41005.04.3 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  saveReqFile( pRequest, aApp, aModel, aTmpl, aExt, aFnc ) {                                      // .(41005.04.4).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
-  var  aExt      =  aExt ? aExt.replace( /^\./, '' ) : `mjs`                                           // .(41005.04.5)
+function  saveReqFile( pRequest, aApp, aModel, aTmpl, aExt, aFnc ) {                                        // .(41005.04.4).(41003.08.3 RAM Write saveAnthropic_NodeReq Beg)
+  var  aExt      =  aExt ? aExt.replace( /^\./, '' ) : `mjs`                                                // .(41005.04.5)
 //     var  aModel    = 'Claude-35s_Anthropic_node'
-  var  aTmplDir  =  path.join( JPTs.JPTsDir, 'templates' )                                             // .(41005.02.5 RAM)
+  var  aTmplDir  =  path.join( JPTs.JPTsDir, 'templates' )                                                  // .(41005.02.5 RAM)
 //     var  aNodeTmpl =  path.join( aTmplDir, `gp4oopn_GPT-4o_OpenAI_node-req_u01.1_template.${aExt}` )     //#.(41005.04.6)
-  var  aNodeTmpl =  path.join( aTmplDir, `${aTmpl}.${aExt}` )                                          // .(41005.04.6)
+  var  aNodeTmpl =  path.join( aTmplDir, `${aTmpl}.${aExt}` )                                               // .(41005.04.6)
 //     var  aAppDir   =  path.join( aRootDir, `/server1/s12_constitution-app` )                             //#.(41005.02.6).(41005.02.7)
-  var  aAppDir   =  path.join( aRootDir, `/${aApp}` )                                                  // .(41005.04.7).(41005.02.6)
+  var  aAppDir   =  path.join( aRootDir, `/${aApp}` )                                                       // .(41005.04.7).(41005.02.6)
 
   var  aMsg_File =  fmtFile(  0,    2, 'messages.json'    )
   var  aReq_File =  fmtFile(  0,    2, 'request_.json'    )
@@ -558,75 +563,82 @@ return  pError;
 // -------  --------  =  ------------------------------------------------------
 return  aNodeReq
        }
-  } // eof saveReqFile                                                                                                    // .(41003.08.3 End)
+            } // eof saveReqFile                                                        // .(41003.08.3 End)
 // -------  --------  =  ------------------------------------------------------
 
-function  fncLn( aFncLn, nLine ) {
-  if (!aFncLn) {                                      // if usage: say( aMsg )
-  var  aStackTrace  =  new Error().stack;
-  var  aCallerLine  =  aStackTrace.split('\n')[2];    // The caller's line is typically the third line in the stack trace
-  var  aFncLn = parseFncLn( aCallerLine ) }                                       // .(41012.02.1)
-return  aFncLn                                                                     // .(41012.02.2)
-   }
+  function  fncLn( aFnc, nLine ) {
+       if (!aFnc || !nLine) {                                                           // .(41119.08.1 RAM Add || !nLine )
+       var  aStackTrace  =  new Error().stack;
+       var  aCallerLine  =  aStackTrace.split('\n')[2];    // The caller's line is typically the third line in the stack trace
+       var  aFnc = parseFncLn( aCallerLine, nLine, aFnc ) }                             // .(41119.08.2 RAM Add nLine, aFnc).(41012.02.1)
+     return aFnc                                                                        // .(41012.02.1)
+            }
 // ------   --------- =  ------------------------------------------------------
 
-function  say( aMsg, aFnc, nLine ) {                                                  // .(40926.01.4 RAM Beg Write say())
-   if (aMsg == "" ) { console.log( "" ); return }                                  // .(40930.04.2 RAM Say a blank line)
-//      var aFnc = fncLn( aFnc, nLine )                                                 // .(41001.01.3)
-  if (!aFnc) {                // Usage say( aMsg )
-   var aStackTrace  =  new Error().stack;
-   var aCallerLine  =  aStackTrace.split('\n')[2];    // The caller's line is typically the third line in the stack trace
-//      var mMatch =  aCallerLine.match(      /(?:at\s+(?:\w+\.)*(\w+)\s+\()?(?:(.+):(\d+):(\d+))/);  // Extract script name and line number using regex
-//      var mMatch =  aCallerLine.match(/(?:^|\s)(:?)at\s+(?:((?:\w+\.)*\w+)\s+\()?(?:(.+):(\d+):(\d+))\)?/); // .(41012.02.1 RAM Claude has to help where there is no leading colon)
-//      var mMatch =  aCallerLine.match(            /at\s+(?:((?:\w+\.)*\w+)\s+\()?(?:(.+):(\d+):(\d+))\)?/);
-   var aFnc   =  parseFncLn( aCallerLine, nLine ) }                                // .(41012.02.3)
-       aMsg      = `\x1b[${ aMsg.match( /^\*/ ) ? 31 : 0}m ${aMsg}`                // .(41008.06.1 RAM Error color is 37:white or 31:red)
-       console.log(`\x1b[${nColor}m ${ aFnc.padEnd( 45 ) }${aMsg}`)                // .(41012.02.4 RAM Was 30).(40926.01.5 RAM)
-   }                                                                               // .(40926.01.4 End)
+  function  say( aMsg, aFnc, nLine ) {                                                  // .(40926.01.4 RAM Beg Write say())
+        if (aMsg == "" ) { console.log( "" ); return }                                  // .(40930.04.2 RAM Say a blank line)
+//           var aFnc = fncLn( aFnc, nLine )                                            // .(41001.01.3Usage say( aMsg)
+        if (!aFnc || !nLine) {                                                          // .(41119.08.3 RAM Add || !nLine )
+        var aStackTrace  =  new Error().stack;
+        var aCallerLine  =  aStackTrace.split('\n')[2];    // The caller's line is typically the third line in the stack trace
+//           var mMatch =  aCallerLine.match(         /(?:at\s+(?:\w+\.)*(\w+)\s+\()?(?:(.+):(\d+):(\d+))/);  // Extract script name and line number using regex
+//           var mMatch =  aCallerLine.match(/(?:^|\s)(:?)at\s+(?:((?:\w+\.)*\w+)\s+\()?(?:(.+):(\d+):(\d+))\)?/); // .(41012.02.2 RAM Claude helped where there is no leading colon)
+//           var mMatch =  aCallerLine.match(            /at\s+(?:((?:\w+\.)*\w+)\s+\()?(?:(.+):(\d+):(\d+))\)?/);
+        var aFnc   =  parseFncLn( aCallerLine, nLine, aFnc ) }                          // .(41119.08.4 RAM Add aFnc).(41012.02.3)
+            aMsg   = `\x1b[${ aMsg.match( /^\*/ ) ? 31 : 0 }m ${aMsg}`                  // .(41008.06.1 RAM Error color is 37:white or 31:red)
+            aDte   = '\x1b[36m[' + `${new Date}`.slice( 16, 24 ) + ']'                  // .(41119.07.1).(41012.02.11 RAM Add Time)
+            console.log( `${aDte} \x1b[${nColor}m ${ aFnc.padEnd( 45 ) }${aMsg}` )      // .(41012.02.4 RAM Color was: 30).(40926.01.5 RAM)
+            }                                                                           // .(40926.01.4 End)
 // ------   --------- =  ------------------------------------------------------
 
-function  parseFncLn( aLine, nLine ) {                                                // .(41012.02.5 RAM Write my version of parseFncLn Beg)
-  var  mMatch    =  aLine.match( /(.+)\((.+)\)/ )
-  var  aFName    =  mMatch[1].match( /anon/   ) ? 'anonymous' : mMatch[1]
-  var  aPath     =  mMatch[2].match( /[A-Z]:/ ) ?  mMatch[2].slice(2).replace( /\\/g, '/' ) : mMatch[2]
-       mMatch    =  aPath.split( /:/ )
-  var  aScript   =  mMatch[0].split('/').pop();                  // Extract just the script name
-   if (aScript  == 'index.js') {                                                                       // .(41001.05.1)
-       aScript   =  mMatch[0].split('/').slice(-2).join( "/" ) } // Extract the folder and script name // .(41001.05.2)
-  var  nLine     =  nLine ? nLine : mMatch[1];
-   if (aScript) { if (!nLine) {                                  // If usage: say( aMsg, `${__filename}[${__line}]` );
-       aScript   =  aScript
-   } else {                                                      // If usage: say( aMsg, __filename, __line );
-       aScript   = `${aScript}[${ `${nLine}`.padStart(3) }]` }
-   } else {
-       aScript   = `${aScript}[  0]`
-       }
-return `${aScript} ${aFName}`
-       }                                                                           // ..(41012.02.5 End)
+function  parseFncLn( aLine, nLine, aFnc ) {                                            // .(41119.08.5 RAM Add aFnc).(41012.02.5 RAM Write my version of parseFncLn Beg)
+       var  mLines    =  aLine.match( /(.+)\((.+)\)/ )
+            mLines    =  mLines ? mLines : ["", "n/a", aLine ]                          // .(41119.08.6 RAM Path may not be in ()s )
+       var  aFName    =  aFnc ? aFnc : (mLines[1].match( /anon/ ) ? 'anonymous' : mLines[1]) // .(41119.08.7)
+       var  aPath     =  mLines[2].match( /[A-Z]:/ ) ?  mLines[2].slice(2).replace( /\\/g, '/' ) : mLines[2]
+       var  mMatch    =  aPath.split( /:/ )
+       var  aScript   =  mMatch[0].split('/').pop();                                    // Extract just the script name
+        if (`${aFnc}`.match( /\[[0-9 ]{3}\]/ )) {                                       // .(41119.08.8 RAM Not sure why, but aScript is in aFnc)
+            aFName    =  aFnc.replace( /.+\] /, "" );
+            aScript   =  aFnc.replace( /\] .+/, "]" ); }
+        if (aScript  == 'index.js') {                                                   // .(41001.05.1)
+            aScript   =  mMatch[0].split('/').slice(-2).join( "/" ) }                   // Extract the folder and script name // .(41001.05.2)
+       var  nLine     =  nLine ? nLine : mMatch[1];
+        if (aScript) { if ( (!nLine) || (aScript.match( /\[/ ) != null) ) {             // .(41119.08.9 RAM nLine is in aScript)
+            aScript   =  aScript
+        } else {                                                                        // If usage: say( aMsg, __filename, __line );
+            aScript   = `${aScript}[${ `${nLine}`.padStart(3) }]` }
+        } else {
+            aScript   = `${aScript}[  0]`
+            }
+     return `${aScript} ${ aFName.replace( / +at /, '' ).replace( /Object./, '' ) }`    // .(41119.08.10 RAM Add .replace( /at/ ))
+            }                                                                           // .(41012.02.5 End)
 // ------   --------- =  ------------------------------------------------------
 
-function  setColor( nColor_ ) {
-       nColor    =  nColor_;
-       }
-function  take( aStr, nWdt, aFill ) { return `${aStr}`.padStart( -nWdt, aFill ? aFill : ' ' ) }
-function  cpyFile( aDir1, aFile1, aDir2, aFile2 ) {
-       console.log( `-- copying '${aFile1}' to '${aFile2}'`)
-  var  aText     =  fs.readFileSync(  path.join( aDir1, aFile1 ), 'ASCII' )
-                    fs.writeFileSync( path.join( aDir2, aFile2), aText, 'ASCII' )
-       }
+  function  setColor( nColor_ ) {
+            nColor    =  nColor_;
+            }
+  function  take( aStr, nWdt, aFill ) { return `${aStr}`.padStart( -nWdt, aFill ? aFill : ' ' ) }
+  function  cpyFile( aDir1, aFile1, aDir2, aFile2 ) {
+//          copying 'c00_t000.01.2.41120.0037_messages.json'   to 'c00_t000.01_Claude-35s_Anthropic_curl_messages.json'
+//          console.log( `-- copying '${    aFile1              }' to '${aFile2}'`)     //#.(41119.10.6)
+            console.log( `-- copying ${ `'${aFile1}'`.padEnd(42) } to '${aFile2}'`)     // .(41119.10.6)
+       var  aText     =  fs.readFileSync(  path.join( aDir1, aFile1 ), 'ASCII' )
+                         fs.writeFileSync( path.join( aDir2, aFile2), aText, 'ASCII' )
+            }
 // ------   --------- =  ------------------------------------------------------
 
-function  findRootDir1( aStartDir ) {
-  let  aDir      =  aStartDir;
-while (!fs.existsSync( path.join(  aDir, 'package.json' ) ) ) {
-  var  aParDir   =  path.dirname( aDir );
-   if (aParDir ===  aDir) {
-       throw new Error('Could not find project root directory');
-       }
-       aDir      =  aParDir;
-       }
-return  aDir;
-       }
+  function  findRootDir1( aStartDir ) {
+       let  aDir      =  aStartDir;
+     while (!fs.existsSync( path.join(  aDir, 'package.json' ) ) ) {
+       var  aParDir   =  path.dirname( aDir );
+        if (aParDir ===  aDir) {
+            throw new Error('Could not find project root directory');
+            }
+            aDir      =  aParDir;
+            }
+     return  aDir;
+            }
 // -------  --------  =  ------------------------------------------------------
 
 module.exports   =
