@@ -20,7 +20,7 @@
 # .(41109.14 11/14/24 RAM  8:32p| Move ._2/JPTs to ._2/ALTs
 # .(41119.05 11/19/24 RAM 12:15p| Fix new aPrompt var, say APIkey, mSources lengths
 # .(41005.02 11/19/24 RAM  2:05p| Move setting aRootDir
-# .(41119.07 11/19/24 RAM  4:00p| Add Time to JPTS.say log
+# .(41119.07 11/19/24 RAM  4:00p| Add Time to JPTS.say log 
 # .(41119.08 11/19/24 RAM  8:48p| Add aFnc and nLine to parseFncLn()
 # .(41119.10 11/20/24 RAM 10:10a| Fix log messages when saving files
                                 |
