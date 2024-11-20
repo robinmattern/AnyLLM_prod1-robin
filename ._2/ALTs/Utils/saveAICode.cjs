@@ -4,7 +4,7 @@
 ##RFILE    +====================+=======+===============+======+=================+
 ##FD   globalJPTs.cjs           |   5204| 11/09/24 20:32|    81| u1.01`41109.2032
 ##FD   globalJPTs.cjs           |  50881| 11/19/24 14:05|   660| u1.01`41119.1405
-##FD   globalJPTs.cjs           |  53737| 11/20/24 10:10|   673| u1.01`41120.1010
+##FD   globalJPTs.cjs           |  53737| 11/20/24 10:12|   672| u1.01`41120.1012
 
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #           This JavaScript file is called from the JPTs module to save
@@ -20,9 +20,9 @@
 # .(41109.14 11/14/24 RAM  8:32p| Move ._2/JPTs to ._2/ALTs
 # .(41119.05 11/19/24 RAM 12:15p| Fix new aPrompt var, say APIkey, mSources lengths
 # .(41005.02 11/19/24 RAM  2:05p| Move setting aRootDir
-# .(41119.07 11/19/24 RAM  4:00p| Add Time to JPTS.say log 
+# .(41119.07 11/19/24 RAM  4:00p| Add Time to JPTS.say log
 # .(41119.08 11/19/24 RAM  8:48p| Add aFnc and nLine to parseFncLn()
-# .(41119.10 11/20/24 RAM 10:10a| Fix log messages when saving files
+# .(41119.10 11/20/24 RAM 10:12a| Fix log messages when saving files
                                 |
 ##SRCE     +====================+===============================================+
 \*/
