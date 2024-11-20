@@ -24,7 +24,7 @@ const path = require( 'path' );                                                 
 const fs   = require( 'fs'   );
 
 function findRootDir(startDir) {
-    var dir = startDir.replace( /._2.+/, '' ); if (dir != startDir) { return dir }      // .(41119.06.1 RAM Why is tis now a problem)}
+    var dir = startDir.replace( /._2.+/, '' ); if (dir != startDir) { return dir }      // .(41119.06.1 RAM Why is this now a problem)}
     var dir = startDir;
     while (!fs.existsSync(path.join( dir, 'package.json') )) {
         const parentDir = path.dirname(dir);
