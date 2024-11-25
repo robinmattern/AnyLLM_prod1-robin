@@ -12,7 +12,8 @@
 ##FD   set-anyllm.sh            |   6508| 11/11/24 10:22|   157| v1.05`41111.1022
 ##FD   set-anyllm.sh            |   6647| 11/11/24 22:00|   158| v1.05`41111.2200
 ##FD   set-anyllm.sh            |   6741| 11/12/24 08:35|   181| v1.05`41112.0830
-##FD   set-anyllm.sh            |   6741| 11/14/24 10:39|   181| v1.05`41114.1030
+##FD   set-anyllm.sh            |   7786| 11/14/24 10:39|   181| v1.05`41114.1030
+##FD   set-anyllm.sh            |   9429| 11/25/24  9:00|   190| v1.05`41125.0900
 ##FD                            |
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #            This script saves anyllm command to ._0/bin.
@@ -41,6 +42,7 @@
 # .(41112.01 11/12/24 RAM  8:00a| Show version and source
 # .(41112.02 11/12/24 RAM  8:30a| Display anyllm version being installed
 # .(41114.01 11/14/24 RAM 10:30a| Add back AnythingLLM's debug commands
+# .(41120.02 11/25/24 RAM  9:00a| Ignore file permissions in this repo
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -160,6 +162,9 @@ function cpyToBin() {
   if [   -f  "${aAnyLLMscr}" ]; then mkScript "${aAnyLLMscr}" "${aJPTs_JDir}" "anyllm"; echo "  Copied:  ${aJPTs_JDir}/anyllm";
                                      Sudo chmod 777 "${aAnyLLMscr}"; fi
                                      getBinVersion "anyllm"                             # .(41112.02.1)
+
+   cd "${aRepo_Dir}"                                                                    # .(41120.02.3 RAM Need to be in FRTools repo)
+   git config core.fileMode false                                                       # .(41120.02.2 RAM Ignore file permissions in this repo)
 
   echo "  Version: ${aBinVer//\"}"                                                      # .(41112.02.2 RAM Show version being installed)
   }
