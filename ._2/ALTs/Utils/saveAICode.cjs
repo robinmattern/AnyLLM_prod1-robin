@@ -23,6 +23,8 @@
 # .(41119.07 11/19/24 RAM  4:00p| Add Time to JPTS.say log
 # .(41119.08 11/19/24 RAM  8:48p| Add aFnc and nLine to parseFncLn()
 # .(41119.10 11/20/24 RAM 10:12a| Fix log messages when saving files
+# .(41127.01 11/27/24 RAM 11:18a| Catch undefined on Ollama aAPI.key
+
                                 |
 ##SRCE     +====================+===============================================+
 \*/
@@ -187,7 +189,7 @@ return  aFile
 //          say( `mMessages.length:      ${ mMessages.length }` )
             say( `aSystemMessage.length: ${ mMessages[0].content.length }` )
             say( `aNextMessage:          ${ aNextMessage }` )
-            say( `aProvider:             ${ aProvider }` );           var aAPIkey = pProvider.apiKey        // .(41119.05.2)
+            say( `aProvider:             ${ aProvider }` );           var aAPIkey = pProvider.apiKey || ''  // .(41127.01.1 RAM Catch undefined)41119.05.2)
             say( `pProvider.apiKey:      ${ aAPIkey.slice(0,25) + '...' + aAPIkey.slice(-20) }` )           // .(41119.05.3)
             say( `pLLMConnector.model:   ${ pLLMConnector.model }` )
             say( `pProvider.baseURL:     ${ pProvider.baseURL }` );
