@@ -13,6 +13,7 @@
 ##FD   set-anyllm.sh            |  17748| 11/12/24 08:36|   322| v1.05`41112.0830
 ##FD   set-anyllm.sh            |  19279| 11/14/24 10:30|   354| v1.05`41114.1030
 ##FD   set-anyllm.sh            |  23622| 11/17/24 17:51|   420| v1.05`41117.1745
+##FD   set-anyllm.sh            |  23622| 12/01/24 15:00|   420| v1.05`41201.1500
 ##FD   run-anyllm.sh            |       |               |      |
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
@@ -45,6 +46,7 @@
 # .(41115.02 11/15/24 RAM 12:30p| Update AnyLLM and ALTools
 # .(41116.03 11/16/24 RAM 11:40a| Add -bdf, for bDebug, bDoit, bForce
 # .(41114.02 11/17/24 RAM  5:45p| Fix setIPAddr for Mac and Unix
+# .(41201.02 12/01/24 RAM  3:00p| Use FRT's Show/Kill Port(s) 
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -61,6 +63,7 @@
   aVer="v0.05.41115.1230"  # run-anyllm.sh
   aVer="v0.05.41116.1140"  # run-anyllm.sh
   aVer="v0.05.41117.1745"  # run-anyllm.sh
+  aVer="v0.05.41201.1500"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -181,57 +184,25 @@ function setIPAddr() {                                                          
        }                                                                                # .(41114.02.1 End)
 # ---------------------------------------------------------------------------
 
-function showPorts() {
-  if [ "${aOS}" != "windows" ]; then                                                                        # .(41109.09.1)
-    echo -e "\n  PID    IPAddr:Port      Program          "                                                 # .(41109.09.2)
-    echo      "  -----  ---------------  -----------------"                                                 # .(41109.09.3)
-#   lsof -i -P -n | grep LISTEN | awk '{ printf "  %-15s %6d   %s\n", $1, $2, $9 }'
-    lsof -i -P -n | grep LISTEN | awk '{ printf "  %-6s %6d %-16s %s\n", $9, $2, $1 }'                      # .(41109.09.4)
-  else                                                                                                      # .(41109.09.5 RAM Write show ports for Windows Beg)
-    echo -e "\n  PID    IPAddr:Port      Program          "
-    echo      "  -----  ---------------  -----------------"
-#   netstat -ano | grep LISTEN | grep node | \
 
-# First, get your arrays (but modified to actually capture the output)
-    mapfile -t array1 < <( wmic process where "name='node.exe'" get commandline | awk 'NR>1 { split( $0, a, " "); gsub( /"/, "", a[2]); print a[2] "..." a[ length(a)-1 ] }' )
-    mapfile -t array2 < <( wmic process where "name='node.exe'" get processid   | awk 'NR>1 { print $1 }' )
-
-#   for i in "${!array1[@]}"; do echo "  $i: ${array1[$i]}"; done
-#   echo      "  -----  ---------------  -----------------"
-#   for i in "${!array2[@]}"; do echo "  $i: $( netstat -ano | grep "${array2[$i]}" | awk '{ a = $2; exit }; END{ print a ? a : "n/a" }' )"; done # combine them
-#   echo      "  -----  ---------------  -----------------"
-
-    for i in "${!array2[@]}"; do array3[$i]="${array2[$i]} $( netstat -ano | grep "${array2[$i]}" | awk '{ a = $2; exit }; END{ print a ? a : "n/a" }' ) ${array1[$i]}"; done # combine them
-#   for i in "${!array3[@]}"; do     echo "  ${array3[$i]}" | awk '{ a=$1; b=$2; c=$3; if (c == "") { a = "."; b=$1; c=$2 }; printf "  %-6s %-16s %s\n", a, b, c }'; done                     # Print the combined array
-    for i in "${!array3[@]}"; do     echo "  ${array3[$i]}" | awk '$3 != "..." { a=$1; b=$2; c=$3; printf "  %-6s %-16s %s\n", a, b, c }'; done                     # Print the combined array
-
-#   ps -W | grep node | \
-#   while read line; do
-#       winpid=$( echo $line | awk '{print $1}')
-#       gitpid=$( echo $line | awk '{print $4}')
-#       port=$( netstat -ano | grep $gitpid | awk '{print $2}')
-#       echo " | awk '{ printf "  %-15s %6d   %s\n", $1, $2, $9 }'
-#       awk -F, '{ gsub("\"","",$0); split( $2, a, "node.exe"$2,  ); printf "%-6s %s\n", $1, a[2]}'
-#       echo "Port: $port  Git Bash PID: $gitpid"
-#   done
-    echo -e "\n  To kill a Windows PID, do this: taskkill //F //PID {PID}"
-    fi                                                                                                      # .(41109.09.5 End)
-    exit_wCR
-    }
 # ---------------------------------------------------------------------------
 
  function killPort() {
      if [ $# -eq 0 ] || [ "$1" == "all" ]; then
-         echo -e "\n  Usage: killport <port_number>\n"
+         echo -e "\n  Usage: kill ports <port_number(s)>\n"
      else
-         local port="$1"
-         local pid=$(lsof -t -i:"$port")
-         if [ -z "$pid" ]; then
-             echo -e "\n* No process found running on port $port"
-         else
-             echo -e "\n  Killing process $pid running on port $port"
-             kill "$pid"
-         fi
+         for nPort in "$@"; do
+             jpt kill port "${nPort}"
+         done
+        
+#        local port="$1"
+#        local pid=$(lsof -t -i:"$port")
+#        if [ -z "$pid" ]; then
+#            echo -e "\n* No process found running on port $port"
+#        else
+#            echo -e "\n  Killing process $pid running on port $port"
+#            kill "$pid"
+#        fi
      fi
     }
 # ---------------------------------------------------------------------------
@@ -392,11 +363,15 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
      fi
 # ---------------------------------------------------------------------------
 
-  if [ "${aCmd}" == "showPorts" ]; then showPorts; fi
+# if [ "${aCmd}" == "showPorts" ]; then showPorts; fi                                   ##.(41201.02.1)
+  if [ "${aCmd}" == "showPorts" ]; then jpt show ports; fi                              # .(41201.02.1 RAM)
 
   if [ "${aCmd}" == "killPort" ]; then
-     nPort=${aArg2}; if [ "${nPort}" == "port" ]; then nPort=${aArg3}; fi
+#    echo "  \$1: '$1', \$2: '$3', \$2: '$3', aArg2: '${aArg3}'"; # exit 
+#    echo "  \${mARGs[0]}: '${mARGs[0]}', \${mARGs[1]}: '${mARGs[1]}', \${mARGs[2]}: '${mARGs[2]}', \${mARGs[3]}: '${mARGs[3]}', \${mARGs[4]}: '${mARGs[4]}'"; # exit 
+     nPort=${mARGs[1]}; if [ "${aArg2}" == "por" ]; then nPort=${mARGs[2]}; fi          # .(41201.02.2 RAM Was == "port")
   if [ "${nPort}" == "" ]; then echo -e "\n* Please provide a port number"; exit_wCR; fi
+#    echo "  Args: '$@', aArg2: ${aArg2} nPort: ${nPort}"; exit 
      killPort ${nPort}
      fi
 # ---------------------------------------------------------------------------
