@@ -13,8 +13,8 @@
 ##FD   set-anyllm.sh            |  17748| 11/12/24 08:36|   322| v1.05`41112.0830
 ##FD   set-anyllm.sh            |  19279| 11/14/24 10:30|   354| v1.05`41114.1030
 ##FD   set-anyllm.sh            |  23622| 11/17/24 17:51|   420| v1.05`41117.1745
-##FD   set-anyllm.sh            |  23622| 12/01/24 15:00|   420| v1.05`41201.1500
-##FD   run-anyllm.sh            |       |               |      |
+##FD   set-anyllm.sh            |  21667| 12/01/24 21:25|   395| v1.05`41201.2125
+
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
 #
@@ -46,8 +46,9 @@
 # .(41115.02 11/15/24 RAM 12:30p| Update AnyLLM and ALTools
 # .(41116.03 11/16/24 RAM 11:40a| Add -bdf, for bDebug, bDoit, bForce
 # .(41114.02 11/17/24 RAM  5:45p| Fix setIPAddr for Mac and Unix
-# .(41201.02 12/01/24 RAM  3:00p| Use FRT's Show/Kill Port(s) 
-#
+# .(41201.02 12/01/24 RAM  3:00p| Use FRT's Show/Kill Port(s)
+# .(41201.06 12/01/24 RAM  9:25p| Cleanup setup command
+
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
 ##SRCE     +====================+===============================================+
@@ -63,7 +64,7 @@
   aVer="v0.05.41115.1230"  # run-anyllm.sh
   aVer="v0.05.41116.1140"  # run-anyllm.sh
   aVer="v0.05.41117.1745"  # run-anyllm.sh
-  aVer="v0.05.41201.1500"  # run-anyllm.sh
+  aVer="v0.05.41201.2125"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -184,9 +185,6 @@ function setIPAddr() {                                                          
        }                                                                                # .(41114.02.1 End)
 # ---------------------------------------------------------------------------
 
-
-# ---------------------------------------------------------------------------
-
  function killPort() {
      if [ $# -eq 0 ] || [ "$1" == "all" ]; then
          echo -e "\n  Usage: kill ports <port_number(s)>\n"
@@ -194,7 +192,7 @@ function setIPAddr() {                                                          
          for nPort in "$@"; do
              jpt kill port "${nPort}"
          done
-        
+
 #        local port="$1"
 #        local pid=$(lsof -t -i:"$port")
 #        if [ -z "$pid" ]; then
@@ -319,7 +317,9 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
   if [ "${aCmd}" == "setup" ]; then
 
      cd "${aRepoDir}"
-     echo "  pwd: '${aRepoDir}'"
+#    echo "  pwd: '${aRepoDir}'"
+#    echo -e "\nanyllm setup\n"                                                              ##.(41201.06.1 )
+     echo -e "\nyarn setup for AnythingLLM\n"                                                # .(41201.06.1 RAM Echo setup command)
      yarn setup
      fi
 # ---------------------------------------------------------------------------
@@ -367,11 +367,11 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
   if [ "${aCmd}" == "showPorts" ]; then jpt show ports; fi                              # .(41201.02.1 RAM)
 
   if [ "${aCmd}" == "killPort" ]; then
-#    echo "  \$1: '$1', \$2: '$3', \$2: '$3', aArg2: '${aArg3}'"; # exit 
-#    echo "  \${mARGs[0]}: '${mARGs[0]}', \${mARGs[1]}: '${mARGs[1]}', \${mARGs[2]}: '${mARGs[2]}', \${mARGs[3]}: '${mARGs[3]}', \${mARGs[4]}: '${mARGs[4]}'"; # exit 
+#    echo "  \$1: '$1', \$2: '$3', \$2: '$3', aArg2: '${aArg3}'"; # exit
+#    echo "  \${mARGs[0]}: '${mARGs[0]}', \${mARGs[1]}: '${mARGs[1]}', \${mARGs[2]}: '${mARGs[2]}', \${mARGs[3]}: '${mARGs[3]}', \${mARGs[4]}: '${mARGs[4]}'"; # exit
      nPort=${mARGs[1]}; if [ "${aArg2}" == "por" ]; then nPort=${mARGs[2]}; fi          # .(41201.02.2 RAM Was == "port")
   if [ "${nPort}" == "" ]; then echo -e "\n* Please provide a port number"; exit_wCR; fi
-#    echo "  Args: '$@', aArg2: ${aArg2} nPort: ${nPort}"; exit 
+#    echo "  Args: '$@', aArg2: ${aArg2} nPort: ${nPort}"; exit
      killPort ${nPort}
      fi
 # ---------------------------------------------------------------------------
