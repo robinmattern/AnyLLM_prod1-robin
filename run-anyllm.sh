@@ -14,6 +14,7 @@
 ##FD   set-anyllm.sh            |  19279| 11/14/24 10:30|   354| v1.05`41114.1030
 ##FD   set-anyllm.sh            |  23622| 11/17/24 17:51|   420| v1.05`41117.1745
 ##FD   set-anyllm.sh            |  21667| 12/01/24 21:25|   395| v1.05`41201.2125
+##FD   set-anyllm.sh            |  23120| 12/03/24 09:00|   413| v1.05`41203.0900
 
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
@@ -48,6 +49,8 @@
 # .(41114.02 11/17/24 RAM  5:45p| Fix setIPAddr for Mac and Unix
 # .(41201.02 12/01/24 RAM  3:00p| Use FRT's Show/Kill Port(s)
 # .(41201.06 12/01/24 RAM  9:25p| Cleanup setup command
+# .(41115.01 12/03/24 RAM  9:00a| Update update command
+
 
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -65,6 +68,7 @@
   aVer="v0.05.41116.1140"  # run-anyllm.sh
   aVer="v0.05.41117.1745"  # run-anyllm.sh
   aVer="v0.05.41201.2125"  # run-anyllm.sh
+  aVer="v0.05.41203.0900"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -77,8 +81,9 @@ function help() {
      echo "    Stop  [{App}|all]  Stop  AnyLLM App: collector, frontend, server or all apps"
      echo "    Show ports         List Program, PID and Port"
      echo "    Kill port {Port}   Kill port number"
+     echo "    Update [{Branch}]  Update branch: Master, JPTools, or both (default)"    # .(41203.03.1)
      echo "    Version            Show Version and Location"                            # .(41112.03.1)
-     echo "    Update             Update Anything-LLM and ALTools"                      # .(41115.02.1)
+     echo "    Update             Update Anything-LLM and ALTools"                      # .(41115.01.10)
 #    echo ""
      exit_wCR
      }
@@ -290,16 +295,29 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
 
   if [ "${aCmd}" == "update" ]; then                                                    # .(41115.01.3 RAM Write anyllm update command Beg)
 
+     aBranch="${mARGs[1]}"; if [ "${aBranch}" == "" ]; then aBranch="both"; fi          # .(41115.01.11)
+     aBranch="$( echo "${aBranch}" | awk '{ print tolower($0) }' )"                     # .(41115.01.12)
+
+     if [ "${aBranch}" == "frtools" ] || [ "{aBranch}" == "both" ]; then                # .(41115.01.13)
      cd "${aRepos}/FRTools_prod2-master"
      gitr update "${aArgFlags}"                                                                             # .(41116.03.3)
      echo -e "\n  --------------------------------------------------------------------------------------------------"
+     bOK=1; fi                                                                          # .(41115.01.14)
 
+     if [ "${aBranch}" == "altools" ] || [ "{aBranch}" == "both" ]; then                # .(41115.01.15)
      cd "${aRepos}/AnyLLM_prod1-master"
      gitr update altools ALTools_prod1 "${aArgFlags}"                                                       # .(41116.03.4)
      echo -e "\n  --------------------------------------------------------------------------------------------------"
+     bOK=1; fi                                                                          # .(41115.01.16)
+
+     if [ "${aBranch}" == "master" ] || [ "{aBranch}" == "both" ]; then                 # .(41115.01.17)
      gitr update master "${aArgFlags}"                                                                      # .(41116.03.5)
      echo -e "\n  --------------------------------------------------------------------------------------------------"
+     bOK=1; fi                                                                          # .(41115.01.18)
 
+     if [ "${bOK}" != "1" ]; then                                                       # .(41115.01.19)
+     echo -e "\n* Invalid branch name: ${mARGs[1]}. S.B master, altools or frtools"              # .(41115.01.20)
+     fi                                                                                 # .(41115.01.21)
      exit_wCR
      fi # eoc update                                                                    # .(41115.01.3 End)
 # ---------------------------------------------------------------------------
