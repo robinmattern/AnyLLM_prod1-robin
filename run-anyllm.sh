@@ -50,7 +50,7 @@
 # .(41201.02 12/01/24 RAM  3:00p| Use FRT's Show/Kill Port(s)
 # .(41201.06 12/01/24 RAM  9:25p| Cleanup setup command
 # .(41115.01 12/03/24 RAM  9:00a| Update update command
-
+# .(41115.01 12/04/24 RAM  8:33a| Update update command msg if no branch
 
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -69,6 +69,7 @@
   aVer="v0.05.41117.1745"  # run-anyllm.sh
   aVer="v0.05.41201.2125"  # run-anyllm.sh
   aVer="v0.05.41203.0900"  # run-anyllm.sh
+  aVer="v0.05.41204.0830"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -301,22 +302,23 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
      if [ "${aBranch}" == "frtools" ] || [ "{aBranch}" == "both" ]; then                # .(41115.01.13)
      cd "${aRepos}/FRTools_prod2-master"
      gitr update "${aArgFlags}"                                                                             # .(41116.03.3)
-     echo -e "\n  --------------------------------------------------------------------------------------------------"
+     echo -e "  --------------------------------------------------------------------------------------------------"
      bOK=1; fi                                                                          # .(41115.01.14)
 
      if [ "${aBranch}" == "altools" ] || [ "{aBranch}" == "both" ]; then                # .(41115.01.15)
      cd "${aRepos}/AnyLLM_prod1-master"
      gitr update altools ALTools_prod1 "${aArgFlags}"                                                       # .(41116.03.4)
-     echo -e "\n  --------------------------------------------------------------------------------------------------"
+     echo -e "  --------------------------------------------------------------------------------------------------"
      bOK=1; fi                                                                          # .(41115.01.16)
 
      if [ "${aBranch}" == "master" ] || [ "{aBranch}" == "both" ]; then                 # .(41115.01.17)
      gitr update master "${aArgFlags}"                                                                      # .(41116.03.5)
-     echo -e "\n  --------------------------------------------------------------------------------------------------"
+     echo -e "  --------------------------------------------------------------------------------------------------"
      bOK=1; fi                                                                          # .(41115.01.18)
 
      if [ "${bOK}" != "1" ]; then                                                       # .(41115.01.19)
-     echo -e "\n* Invalid branch name: ${mARGs[1]}. S.B master, altools or frtools"              # .(41115.01.20)
+     aMsg="Invalid"; if [ "${mARGs[1]}" == "" ]; then aMsg="Please provide a"; fi       # .(41115.01.31 RAM Change for no branch)
+     echo -e "\n* ${aMsg} branch name: ${mARGs[1]}. S.B master, altools or both"        # .(41115.01.31).(41115.01.20)
      fi                                                                                 # .(41115.01.21)
      exit_wCR
      fi # eoc update                                                                    # .(41115.01.3 End)
