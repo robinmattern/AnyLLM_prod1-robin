@@ -16,6 +16,7 @@
 ##FD   set-anyllm.sh            |  21667| 12/01/24 21:25|   395| v1.05`41201.2125
 ##FD   set-anyllm.sh            |  23120| 12/03/24 09:00|   413| v1.05`41203.0900
 ##FD   set-anyllm.sh            |  27963| 12/04/24 09:55|   458| v1.05`41204.0955
+##FD   set-anyllm.sh            |  28803| 12/05/24 09:50|   467| v1.05`41205.0950
 
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
@@ -52,8 +53,9 @@
 #.(41201.06  12/01/24 RAM  9:25p| Cleanup setup command
 #.(41115.02b 12/03/24 RAM  9:00a| Update update command
 #.(41115.02c 12/04/24 RAM  8:33a| Update update command msg if no branch
-#.(41115.02d 12/04/24 RAM  2:30p| Fix Update ALTools
+#.(41115.02d 12/04/24 RAM  2:30p| Fix update ALTools
 #.(41109.08b 12/04/24 RAM  9:55p| Check for Repos/Robin
+#.(41115.02f 12/05/24 RAM  9:50p| Don't delete branch for update altools
 
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -74,6 +76,7 @@
   aVer="v0.05.41203.0900"  # run-anyllm.sh
   aVer="v0.05.41204.0830"  # run-anyllm.sh
   aVer="v0.05.41204.0955"  # run-anyllm.sh
+  aVer="v0.05.41205.0950"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -324,12 +327,17 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
 
    if [ "${aBranch}" == "altools" ] || [ "{aBranch}" == "both" ]; then                  # .(41115.02b.15)
 #    cd "${aRepos}/AnyLLM_prod1-master"                                                 # .(41115.02d.51 RAM)
-     cd "${aRepos}"; # echo "pwd: $( pwd )"; exit                                       # .(41115.02d.52 RAM)
+     aDir="AnyLLM"; if [ "${mARGs[2]}" != "" ];  then aDir="${mARGs[2]}"; fi            # .(41115.02f.1)
+     if [ ! -d "${aRepos}/${aDir}" ]; then                                              # .(41115.02f.2)
+        echo -e "* Invalid Repository folder, ${aDir}."                                 # .(41115.02f.3)
+        exit_wCR                                                                        # .(41115.02f.4)
+        fi                                                                              # .(41115.02f.5)
+     cd "${aRepos}/${aDir}";  # echo "pwd: $( pwd )"; exit                              # .(41115.02f.6 RAM Gotta be in the repo folder).(41115.02d.52 RAM)
 #    gitr update altools ALTools_prod1 "${aArgFlags}"                                   ##.(41116.03.4).(41115.02d.25)
 #    git checkout master || exit 1;                                                     ##.(41115.02d.26 RAM Cute way to fail gracefully)
    if [ "${bDoit}" != "1" ]; then                                                       # .(41115.02d.53 RAM Honor bDoit)
-     git checkout master; if [ $? -ne 0 ]; then echo "checkout failed"; exit 1; fi      # .(41115.02d.27).(41204.05.1)
-     git branch -D altools                                                              # .(41115.02d.28 RAM Delete ALTools branch).(41204.05.1)
+#    git checkout master; if [ $? -ne 0 ]; then echo "checkout failed"; exit 1; fi      ##.(41115.02f.7).(41115.02d.27).(41204.05.1)
+#    git branch -D altools                                                              ##.(41115.02f.8).(41115.02d.28 RAM Delete ALTools branch).(41204.05.1)
 #    gitr delete branch altools                                                         ##.(41204.05.1).(41115.02d.28 RAM Delete ALTools branch)
      echo "  FRT install ALTools ${mARGs[2]} -u"
      frt install ALTools "${mARGs[2]}" -u                                               # .(41115.02d.54).(41115.02d.26 RAM Reinstall it)
