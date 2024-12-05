@@ -15,6 +15,7 @@
 ##FD   set-anyllm.sh            |  23622| 11/17/24 17:51|   420| v1.05`41117.1745
 ##FD   set-anyllm.sh            |  21667| 12/01/24 21:25|   395| v1.05`41201.2125
 ##FD   set-anyllm.sh            |  23120| 12/03/24 09:00|   413| v1.05`41203.0900
+##FD   set-anyllm.sh            |  27963| 12/04/24 09:55|   458| v1.05`41204.0955
 
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
@@ -52,7 +53,7 @@
 #.(41115.02b 12/03/24 RAM  9:00a| Update update command
 #.(41115.02c 12/04/24 RAM  8:33a| Update update command msg if no branch
 #.(41115.02d 12/04/24 RAM  2:30p| Fix Update ALTools
-#.(41109.08b 12/04/24 RAM  9:12p| Check for Repos/Robin
+#.(41109.08b 12/04/24 RAM  9:55p| Check for Repos/Robin
 
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -72,6 +73,7 @@
   aVer="v0.05.41201.2125"  # run-anyllm.sh
   aVer="v0.05.41203.0900"  # run-anyllm.sh
   aVer="v0.05.41204.0830"  # run-anyllm.sh
+  aVer="v0.05.41204.0955"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -129,7 +131,7 @@ function getBinVersion() {                                                      
  function getRepoDir() {
 #  aBranch="$( git branch | awk '/\*/ { print substr($0,2) }' )"
 #  echo "AnyLLM[ 90] "
-   aRepos="$( echo "$(pwd)"       |  awk '{ match($0, /.*[Rr][Ee][Pp][Oo][Ss]/); print substr($0,1,RLENGTH) }' )";  
+   aRepos="$( echo "$(pwd)"       |  awk '{ match($0, /.*[Rr][Ee][Pp][Oo][Ss]/); print substr($0,1,RLENGTH) }' )";
    if [ -d "${aRepos}/Robin"      ]; then aRepos="${aRepos}/Robin"; fi                                          # .(41109.08b.1 RAM Check for Repos/Robin)
 #  aRepo="$( git remote -v        |  awk '/push/         { sub( /.+\//, ""); sub( /\.git.+/, "" ); print }' )"  # .(41109.08.1)
    aRepo="$( git remote -v        |  awk '/origin.+push/ { sub( /.+\//, ""); sub( /\.git.+/, "" ); print }' )"  # .(41109.08.1 RAM Just for origin ??)
@@ -241,7 +243,7 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
 #        echo "    Debug: mARGs now contains: ${mARGs[@]}"
 #        i=${#mARGs[@]}; echo "    Debug: mARGs[ $((i-1)) ] now contains: ${mARGs[ $((i-1)) ]}"
          i=${#mARGs[@]}; i=$((i-1))  # current length, origin 0
-#        echo "  - gitR2[236]  \${mARGs[${i}]}: '${mARGs[${i}]}', \$$i: '$1'" 
+#        echo "  - gitR2[236]  \${mARGs[${i}]}: '${mARGs[${i}]}', \$$i: '$1'"
          ;;
     esac
     shift
@@ -311,9 +313,9 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
 
    if [ "${aBranch}" == "frtools" ] || [ "{aBranch}" == "both" ]; then                  # .(41115.02b.13)
      if [ -d "${aRepos}/FRTools"               ]; then cd "${aRepos}/FRTools"; fi       # .(41115.02e.xx Beg)
-     if [ -d "${aRepos}/FRTools_/prod2-master" ]; then cd "${aRepos}/FRTools_/prod2-master"; fi 
-     if [ -d "${aRepos}/FRTools_prod2-master"  ]; then cd "${aRepos}/FRTools_prod2-master";  fi 
-     if [ -d "${aRepos}/FRTools_/FRTools_prod2-master"  ]; then cd "${aRepos}/FRTools_/FRTools_prod2-master";  fi 
+     if [ -d "${aRepos}/FRTools_/prod2-master" ]; then cd "${aRepos}/FRTools_/prod2-master"; fi
+     if [ -d "${aRepos}/FRTools_prod2-master"  ]; then cd "${aRepos}/FRTools_prod2-master";  fi
+     if [ -d "${aRepos}/FRTools_/FRTools_prod2-master"  ]; then cd "${aRepos}/FRTools_/FRTools_prod2-master";  fi
                                                                                         # .(41115.02e.xx End)
      gitr update "${aArgFlags}"                                                         # .(41116.03.3)
      end_wCR                                                                            # .(41204.03..4)
@@ -344,9 +346,9 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
    if [ "${aBranch}" == "master"  ] || [ "{aBranch}" == "both" ]; then                  # .(41115.02b.17)
 #    cd "${aRepos}"                                                                     ##.(41115.02e.x RAM)
      if [ -d "${aRepos}/AnyLLM"               ]; then cd "${aRepos}/AnyLLM"; fi         # .(41115.02e.xx Beg)
-     if [ -d "${aRepos}/AnyLLM_prod1-master"  ]; then cd "${aRepos}/AnyLLM_prod1-master";  fi 
-     if [ -d "${aRepos}/AnyLLM_/prod1-master" ]; then cd "${aRepos}/AnyLLM_/prod1-master"; fi 
-     if [ -d "${aRepos}/AnyLLM_/AnyLLM_prod1-master" ]; then cd "${aRepos}/AnyLLM_/AnyLLM_prod1-master";  fi 
+     if [ -d "${aRepos}/AnyLLM_prod1-master"  ]; then cd "${aRepos}/AnyLLM_prod1-master";  fi
+     if [ -d "${aRepos}/AnyLLM_/prod1-master" ]; then cd "${aRepos}/AnyLLM_/prod1-master"; fi
+     if [ -d "${aRepos}/AnyLLM_/AnyLLM_prod1-master" ]; then cd "${aRepos}/AnyLLM_/AnyLLM_prod1-master";  fi
                                                                                         # .(41115.02e.xx End)
      gitr update master "${aArgFlags}"                                                                      # .(41116.03.5)
      end_wCR                                                                            # .(41204.03..4)
@@ -357,8 +359,8 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
 #    aMsg="Invalid";       if [ "${mARGs[1]}" == "" ]; then aMsg="Please provide a"; fi ##.(41115.02c.22).(41115.02c.24)
 #    aBra=": ${mARGs[1]}"; if [ "${mARGs[1]}" == "" ]; then aBra=""; fi                 ##.(41115.02c.23).(41115.02c.24)
         if [ "${mARGs[1]}" == "" ]; then                                                # .(41115.02c.24 RAM Change for no branch Beg)
-           echo -e "\n* Please provide a branch name: master, altools or both"   
-         else 
+           echo -e "\n* Please provide a branch name: master, altools or both"
+         else
            echo -e "\n* Invalid branch name: ${mARGs[1]}. S.B master, altools or both"  # .(41115.02b.20)
            fi                                                                           # .(41115.02c.24 End)
      fi                                                                                 # .(41115.02b.21)
