@@ -33,24 +33,26 @@
 #            stopApp            |
 #                               |
 ##CHGS     .--------------------+----------------------------------------------+
-# .(41016.01 10/16/24 RAM  9:23a|
-# .(41016.01 10/16/24 RAM 10:10a|
-# .(41016.01 10/21/24 RAM  8:12a|
-# .(41016.01 10/22/24 RAM  4:55p|
-# .(41016.01 10/23/24 RAM  8:37a|
-# .(41109.07 11/09/24 RAM  4:10p| Add this heading
-# .(41109.08 11/09/24 RAM  4:30p| Get remote for origin only
-# .(41109.09 11/09/24 RAM  6:10p| Write show ports for Windows
-# .(41111.06 11/09/24 RAM  7:08p| Allow anyllm to run from anywhere
-# .(41112.03 11/12/24 RAM  8:30a| Add version and source
-# .(41114.02 11/14/24 RAM 10:30a| Write and use setIPAddr for frontend .env
-# .(41115.02 11/15/24 RAM 12:30p| Update AnyLLM and ALTools
-# .(41116.03 11/16/24 RAM 11:40a| Add -bdf, for bDebug, bDoit, bForce
-# .(41114.02 11/17/24 RAM  5:45p| Fix setIPAddr for Mac and Unix
-# .(41201.02 12/01/24 RAM  3:00p| Use FRT's Show/Kill Port(s)
-# .(41201.06 12/01/24 RAM  9:25p| Cleanup setup command
-# .(41115.01 12/03/24 RAM  9:00a| Update update command
-# .(41115.01 12/04/24 RAM  8:33a| Update update command msg if no branch
+#.(41016.01  10/16/24 RAM  9:23a|
+#.(41016.01  10/16/24 RAM 10:10a|
+#.(41016.01  10/21/24 RAM  8:12a|
+#.(41016.01  10/22/24 RAM  4:55p|
+#.(41016.01  10/23/24 RAM  8:37a|
+#.(41109.07  11/09/24 RAM  4:10p| Add this heading
+#.(41109.08  11/09/24 RAM  4:30p| Get remote for origin only
+#.(41109.09  11/09/24 RAM  6:10p| Write show ports for Windows
+#.(41111.06  11/09/24 RAM  7:08p| Allow anyllm to run from anywhere
+#.(41112.03  11/12/24 RAM  8:30a| Add version and source
+#.(41114.02  11/14/24 RAM 10:30a| Write and use setIPAddr for frontend .env
+#.(41115.02  11/14/24 RAM 10:30a| Update AnyLLM and ALTools
+#.(41116.03  11/16/24 RAM 11:40a| Add -bdf, for bDebug, bDoit, bForce
+#.(41114.02  11/17/24 RAM  5:45p| Fix setIPAddr for Mac and Unix
+#.(41201.02  12/01/24 RAM  3:00p| Use FRT's Show/Kill Port(s)
+#.(41201.06  12/01/24 RAM  9:25p| Cleanup setup command
+#.(41115.02b 12/03/24 RAM  9:00a| Update update command
+#.(41115.02c 12/04/24 RAM  8:33a| Update update command msg if no branch
+#.(41115.02d 12/04/24 RAM  2:30p| Fix Update ALTools
+#.(41109.08b 12/04/24 RAM  9:12p| Check for Repos/Robin
 
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -84,12 +86,15 @@ function help() {
      echo "    Kill port {Port}   Kill port number"
      echo "    Update [{Branch}]  Update branch: Master, JPTools, or both (default)"    # .(41203.03.1)
      echo "    Version            Show Version and Location"                            # .(41112.03.1)
-     echo "    Update             Update Anything-LLM and ALTools"                      # .(41115.01.10)
+     echo "    Update             Update Anything-LLM and ALTools"                      # .(41115.02b.10)
 #    echo ""
      exit_wCR
      }
 # ---------------------------------------------------------------------------
 
+function end_wCR() {                                                                    # .(41204.03.1 RAM Write end_wCR. Who knows why?)
+  if [ "${aOS}" != "darwin" ]; then echo ""; return; fi                                 # .(41204.03.2)
+     }                                                                                  # .(41204.03.3)
 function exit_wCR() {
   if [ "${aOS}" == "darwin" ]; then echo ""; fi
 # if [ "$1" == "exit" ]; then exit; fi
@@ -124,21 +129,22 @@ function getBinVersion() {                                                      
  function getRepoDir() {
 #  aBranch="$( git branch | awk '/\*/ { print substr($0,2) }' )"
 #  echo "AnyLLM[ 90] "
-   aRepos="$( echo "$(pwd)"       | awk '{ match($0, /.*[Rr][Ee][Pp][Oo][Ss]/); print substr($0,1,RLENGTH) }' )";
-#  aRepo="$( git remote -v        | awk '/push/         { sub( /.+\//, ""); sub( /\.git.+/, "" ); print }' )"     # .(41109.08.1)
-   aRepo="$( git remote -v        | awk '/origin.+push/ { sub( /.+\//, ""); sub( /\.git.+/, "" ); print }' )"     # .(41109.08.1 RAM Just for origin ??)
+   aRepos="$( echo "$(pwd)"       |  awk '{ match($0, /.*[Rr][Ee][Pp][Oo][Ss]/); print substr($0,1,RLENGTH) }' )";  
+   if [ -d "${aRepos}/Robin"      ]; then aRepos="${aRepos}/Robin"; fi                                          # .(41109.08b.1 RAM Check for Repos/Robin)
+#  aRepo="$( git remote -v        |  awk '/push/         { sub( /.+\//, ""); sub( /\.git.+/, "" ); print }' )"  # .(41109.08.1)
+   aRepo="$( git remote -v        |  awk '/origin.+push/ { sub( /.+\//, ""); sub( /\.git.+/, "" ); print }' )"  # .(41109.08.1 RAM Just for origin ??)
 #  echo "AnyLLM[ 94]  aRepo: ${aRepo}"
 #  aProjDir="${aRepoDir%%_*}"
 #  aProjDir="$( echo "$(pwd)"     | awk '{ sub( "'${aRepoDir}'", "" ); print }' )"
 #  aAWK='{ sub( "'${aRepos//\//\/}'/", "" ); sub( /[\/_].*/, "_"); print }';                echo "  aAWK:    '${aAWK}'"  # double up /s
    aAWK='{ sub( "'${aRepos}'/", "" );  sub( /_\/*.+/, "" ); sub( /\/.+/, "" ); print }';  # echo "  aAWK:    '${aAWK}'"  # .(41109.08.2 RAM awk: cmd. line:1: warning: escape sequence `\/' treated as plain `/')
 #  aAWK='{ sub( "'${aRepos}'/", "" );  sub( "_/*.+",  "" ); sub( "/.+",  "" ); print }';    echo "  aAWK:    '${aAWK}'"  ##.(41109.08.2
-   aProject="$( echo "$(pwd)"     | awk "${aAWK}" )" 2>/dev/null
+   aProject="$( echo "$(pwd)"     |  awk "${aAWK}" )" 2>/dev/null
 #  echo "AnyLLM[101]  aProject: ${aProject}"
 
-   aStgDir="$(  echo "$(pwd)"     | awk '{ sub( "'.+${aProject}'", "" ); print }' )"
-#  aStage="$(   echo "${aStgDir}" | awk '{ sub( "^[_\/]+"        , "" ); print }' )"   ##.(41109.08.3 RAM awk: cmd. line:1: warning: escape sequence `\/' treated as plain `/')
-   aStage="$(   echo "${aStgDir}" | awk '{ sub( "^[_/]+"         , "" ); print }' )"   # .(41109.08.3)
+   aStgDir="$(  echo "$(pwd)"     |  awk '{ sub( "'.+${aProject}'", "" ); print }' )"
+#  aStage="$(   echo "${aStgDir}" |  awk '{ sub( "^[_\/]+"        , "" ); print }' )"   ##.(41109.08.3 RAM awk: cmd. line:1: warning: escape sequence `\/' treated as plain `/')
+   aStage="$(   echo "${aStgDir}" |  awk '{ sub( "^[_/]+"         , "" ); print }' )"   # .(41109.08.3)
 #  echo "AnyLLM[105]  aStage:    '${aStage}'"; # exit
 
    aRepoDir="${aRepos}/${aProject}${aStgDir}"
@@ -230,14 +236,18 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
         -[bdf]*)          [[ "$1" =~ "b" ]] && bDebug=1; [[ "$1" =~ "d" ]] && bDoit=1; [[ "$1" =~ "f" ]] && bForce=1 ;;
         *)
          mArgs+=("$( echo "${1:0:3}" | sed 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')"); # mARGs+=("$1")
+#        echo -e "\n    Debug: Adding '$1' to mARGs"
          mARGs+=("$1")
-         i=${#mARGs[@]}
-#        sayMsg  "gitR2[181]  \${mARGs[${i}]}: '${mARGs[${i}]}', \$$i: '$1'" 1
+#        echo "    Debug: mARGs now contains: ${mARGs[@]}"
+#        i=${#mARGs[@]}; echo "    Debug: mARGs[ $((i-1)) ] now contains: ${mARGs[ $((i-1)) ]}"
+         i=${#mARGs[@]}; i=$((i-1))  # current length, origin 0
+#        echo "  - gitR2[236]  \${mARGs[${i}]}: '${mARGs[${i}]}', \$$i: '$1'" 
          ;;
     esac
     shift
   done
     set -- "${mArgs[@]}"  # Restore the command arguments, lower case, three letters                        # .(41116.03.1 End)
+    echo ""
                                                     aArgFlags="-"                                           # .(41116.03.2 RAM Add aArgFlags Beg)
     if [ "${bDoit}"     == "1" ]; then aArgFlags="${aArgFlags}d"; fi
     if [ "${bDebug}"    == "1" ]; then aArgFlags="${aArgFlags}b"; fi
@@ -251,10 +261,10 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
 
 # ---------------------------------------------------------------------------
 
-          aArg1=$1; aArg2=$2; aArg3=$3;  aCmd="help"
-  if [ "${aArg1:0:5}" == "set" ]; then aCmd="setup";   fi
-  if [ "${aArg1:0:3}" == "ver" ]; then aCmd="version"; fi                               # .(411112.03.2)
-  if [ "${aArg1:0:3}" == "sou" ]; then aCmd="source";  fi                               # .(411112.03.5)
+          aArg1=$1; aArg2=$2; aArg3=$3; aCmd="help"
+  if [ "${aArg1:0:5}" == "set" ]; then  aCmd="setup";   fi
+  if [ "${aArg1:0:3}" == "ver" ]; then  aCmd="version"; fi                               # .(411112.03.2)
+  if [ "${aArg1:0:3}" == "sou" ]; then  aCmd="source";  fi                               # .(411112.03.5)
 
   if [ "${aArg1:0:3}" == "cop" ] && [ "${aArg2:0:3}" == "env" ]; then aCmd="copyEnvs";  fi
 
@@ -274,9 +284,9 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
   if [ "${aArg1:0:3}" == "kil" ] && [ "${aArg2:0:3}" == "por" ]; then aCmd="killPort";  fi
   if [ "${aArg1:0:3}" == "sho" ] && [ "${aArg2:0:3}" == "por" ]; then aCmd="showPorts"; fi
 
-  if [ "${aArg1:0:3}" == "upd" ];                                then aCmd="update"; fi # .(41115.01.2)
+  if [ "${aArg1:0:3}" == "upd" ];                                then aCmd="update"; fi # .(41115.02.2)
 
-# echo "  aCmd: '${aCmd}', aArg1: '${aArg1}', aArg2: '${aArg2}', aArg3: '${aArg3}', bDoit: '${bDoit}', bDebug: '${bDebug}', bForce: '${bForce}', aArgFlags: '${aArgFlags}'"; exit
+# echo "  aCmd: '${aCmd}', aArg1: '${aArg1}', aArg2: '${aArg2}', \$3: '$3', mARGs[2]: '${mARGs[2]}', bDoit: '${bDoit}', bDebug: '${bDebug}', bForce: '${bForce}', aArgFlags: '${aArgFlags}'"; exit;
 
 # ---------------------------------------------------------------------------
 
@@ -294,34 +304,66 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
      fi
 # ---------------------------------------------------------------------------
 
-  if [ "${aCmd}" == "update" ]; then                                                    # .(41115.01.3 RAM Write anyllm update command Beg)
+  if [ "${aCmd}" == "update" ]; then                                                    # .(41115.02.3 RAM Write anyllm update command Beg)
 
-     aBranch="${mARGs[1]}"; if [ "${aBranch}" == "" ]; then aBranch="both"; fi          # .(41115.01.11)
-     aBranch="$( echo "${aBranch}" | awk '{ print tolower($0) }' )"                     # .(41115.01.12)
+     aBranch="${mARGs[1]}"; if [ "${aBranch}" == "" ]; then aBranch="both"; fi          # .(41115.02b.11)
+     aBranch="$( echo "${aBranch}" | awk '{ print tolower($0) }' )"                     # .(41115.02b.12)
 
-     if [ "${aBranch}" == "frtools" ] || [ "{aBranch}" == "both" ]; then                # .(41115.01.13)
-     cd "${aRepos}/FRTools_prod2-master"
-     gitr update "${aArgFlags}"                                                                             # .(41116.03.3)
+   if [ "${aBranch}" == "frtools" ] || [ "{aBranch}" == "both" ]; then                  # .(41115.02b.13)
+     if [ -d "${aRepos}/FRTools"               ]; then cd "${aRepos}/FRTools"; fi       # .(41115.02e.xx Beg)
+     if [ -d "${aRepos}/FRTools_/prod2-master" ]; then cd "${aRepos}/FRTools_/prod2-master"; fi 
+     if [ -d "${aRepos}/FRTools_prod2-master"  ]; then cd "${aRepos}/FRTools_prod2-master";  fi 
+     if [ -d "${aRepos}/FRTools_/FRTools_prod2-master"  ]; then cd "${aRepos}/FRTools_/FRTools_prod2-master";  fi 
+                                                                                        # .(41115.02e.xx End)
+     gitr update "${aArgFlags}"                                                         # .(41116.03.3)
+     end_wCR                                                                            # .(41204.03..4)
      echo -e "  --------------------------------------------------------------------------------------------------"
-     bOK=1; fi                                                                          # .(41115.01.14)
+     bOK=1; fi                                                                          # .(41115.02b.14)
 
-     if [ "${aBranch}" == "altools" ] || [ "{aBranch}" == "both" ]; then                # .(41115.01.15)
-     cd "${aRepos}/AnyLLM_prod1-master"
-     gitr update altools ALTools_prod1 "${aArgFlags}"                                                       # .(41116.03.4)
+   if [ "${aBranch}" == "altools" ] || [ "{aBranch}" == "both" ]; then                  # .(41115.02b.15)
+#    cd "${aRepos}/AnyLLM_prod1-master"                                                 # .(41115.02d.51 RAM)
+     cd "${aRepos}"; # echo "pwd: $( pwd )"; exit                                       # .(41115.02d.52 RAM)
+#    gitr update altools ALTools_prod1 "${aArgFlags}"                                   ##.(41116.03.4).(41115.02d.25)
+#    git checkout master || exit 1;                                                     ##.(41115.02d.26 RAM Cute way to fail gracefully)
+   if [ "${bDoit}" != "1" ]; then                                                       # .(41115.02d.53 RAM Honor bDoit)
+     git checkout master; if [ $? -ne 0 ]; then echo "checkout failed"; exit 1; fi      # .(41115.02d.27).(41204.05.1)
+     git branch -D altools                                                              # .(41115.02d.28 RAM Delete ALTools branch).(41204.05.1)
+#    gitr delete branch altools                                                         ##.(41204.05.1).(41115.02d.28 RAM Delete ALTools branch)
+     echo "  FRT install ALTools ${mARGs[2]} -u"
+     frt install ALTools "${mARGs[2]}" -u                                               # .(41115.02d.54).(41115.02d.26 RAM Reinstall it)
+   else                                                                                 # .(41115.02d.55)
+     git checkout master; if [ $? -ne 0 ]; then echo "checkout failed"; exit 1; fi      # .(41115.02d.27).(41204.05.1)
+     git branch -D altools                                                              # .(41115.02d.28 RAM Delete ALTools branch).(41204.05.1)
+#    gitr delete branch altools                                                         ##.(41204.05.1).(41115.02d.28 RAM Delete ALTools branch)
+     frt install ALTools "${mARGs[2]}" -du                                              # .(41115.02d.26 RAM Reinstall it)
+     fi                                                                                 # .(41115.02d.56)
+     end_wCR                                                                            # .(41204.03..4)
      echo -e "  --------------------------------------------------------------------------------------------------"
-     bOK=1; fi                                                                          # .(41115.01.16)
+     bOK=1; fi                                                                          # .(41115.02b.16)
 
-     if [ "${aBranch}" == "master" ] || [ "{aBranch}" == "both" ]; then                 # .(41115.01.17)
+   if [ "${aBranch}" == "master"  ] || [ "{aBranch}" == "both" ]; then                  # .(41115.02b.17)
+#    cd "${aRepos}"                                                                     ##.(41115.02e.x RAM)
+     if [ -d "${aRepos}/AnyLLM"               ]; then cd "${aRepos}/AnyLLM"; fi         # .(41115.02e.xx Beg)
+     if [ -d "${aRepos}/AnyLLM_prod1-master"  ]; then cd "${aRepos}/AnyLLM_prod1-master";  fi 
+     if [ -d "${aRepos}/AnyLLM_/prod1-master" ]; then cd "${aRepos}/AnyLLM_/prod1-master"; fi 
+     if [ -d "${aRepos}/AnyLLM_/AnyLLM_prod1-master" ]; then cd "${aRepos}/AnyLLM_/AnyLLM_prod1-master";  fi 
+                                                                                        # .(41115.02e.xx End)
      gitr update master "${aArgFlags}"                                                                      # .(41116.03.5)
+     end_wCR                                                                            # .(41204.03..4)
      echo -e "  --------------------------------------------------------------------------------------------------"
-     bOK=1; fi                                                                          # .(41115.01.18)
+     bOK=1; fi                                                                          # .(41115.02b.18)
 
-     if [ "${bOK}" != "1" ]; then                                                       # .(41115.01.19)
-     aMsg="Invalid"; if [ "${mARGs[1]}" == "" ]; then aMsg="Please provide a"; fi       # .(41115.01.31 RAM Change for no branch)
-     echo -e "\n* ${aMsg} branch name: ${mARGs[1]}. S.B master, altools or both"        # .(41115.01.31).(41115.01.20)
-     fi                                                                                 # .(41115.01.21)
+   if [ "${bOK}" != "1" ]; then                                                       # .(41115.02b.19)
+#    aMsg="Invalid";       if [ "${mARGs[1]}" == "" ]; then aMsg="Please provide a"; fi ##.(41115.02c.22).(41115.02c.24)
+#    aBra=": ${mARGs[1]}"; if [ "${mARGs[1]}" == "" ]; then aBra=""; fi                 ##.(41115.02c.23).(41115.02c.24)
+        if [ "${mARGs[1]}" == "" ]; then                                                # .(41115.02c.24 RAM Change for no branch Beg)
+           echo -e "\n* Please provide a branch name: master, altools or both"   
+         else 
+           echo -e "\n* Invalid branch name: ${mARGs[1]}. S.B master, altools or both"  # .(41115.02b.20)
+           fi                                                                           # .(41115.02c.24 End)
+     fi                                                                                 # .(41115.02b.21)
      exit_wCR
-     fi # eoc update                                                                    # .(41115.01.3 End)
+     fi # eoc update                                                                    # .(41115.02.3 End)
 # ---------------------------------------------------------------------------
 
     echo ""

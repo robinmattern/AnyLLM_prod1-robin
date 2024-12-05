@@ -135,7 +135,7 @@ function showEm() {
   }
 # -----------------------------------------------------------
 
-function  mkScript() {
+function mkScript() {
 # echo "    aAnyLLMscr:  $2/$3"
   echo "#!/bin/bash"   >"$2/$3"
   echo "  $1 \"\$@\"" >>"$2/$3"
