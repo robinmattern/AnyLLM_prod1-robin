@@ -17,6 +17,7 @@
 ##FD   set-anyllm.sh            |  23120| 12/03/24 09:00|   413| v1.05`41203.0900
 ##FD   set-anyllm.sh            |  27963| 12/04/24 09:55|   458| v1.05`41204.0955
 ##FD   set-anyllm.sh            |  28803| 12/05/24 09:50|   467| v1.05`41205.0950
+##FD   set-anyllm.sh            |  29230| 12/24/24 11:00|   470| v1.05`41224.1100
 
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
@@ -56,6 +57,7 @@
 #.(41115.02d 12/04/24 RAM  2:30p| Fix update ALTools
 #.(41109.08b 12/04/24 RAM  9:55p| Check for Repos/Robin
 #.(41115.02f 12/05/24 RAM  9:50p| Don't delete branch for update altools
+#.(41224.01  12/24/24 RAM 11:00a| Fix blank lines
 
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -77,6 +79,7 @@
   aVer="v0.05.41204.0830"  # run-anyllm.sh
   aVer="v0.05.41204.0955"  # run-anyllm.sh
   aVer="v0.05.41205.0950"  # run-anyllm.sh
+  aVer="v0.05.41224.1100"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -98,10 +101,10 @@ function help() {
 # ---------------------------------------------------------------------------
 
 function end_wCR() {                                                                    # .(41204.03.1 RAM Write end_wCR. Who knows why?)
-  if [ "${aOS}" != "darwin" ]; then echo ""; return; fi                                 # .(41204.03.2)
+  if [ "${aOS}" != "windows" ]; then echo ""; return; fi                                # .(41224.01.4 RAM was != darwin).(41204.03.2)
      }                                                                                  # .(41204.03.3)
 function exit_wCR() {
-  if [ "${aOS}" == "darwin" ]; then echo ""; fi
+  if [ "${aOS}" != "windows" ]; then echo ""; fi                                        # .(41224.01.5 RAM was == darwin)
 # if [ "$1" == "exit" ]; then exit; fi
      exit
      }
@@ -110,7 +113,7 @@ function exit_wCR() {
 function setOSvars() {
      aTS=$( date '+%y%m%d.%H%M' ); aTS=${aTS:2}
      aBashrc="$HOME/.bashrc"
-     aBinDir="/Home/._0/bin"
+     aBinDir="/home/._0/bin"                                                            # .(41224.01.6 RAM Was Home)
      aOS="linux"
   if [[ "${OS:0:7}" == "Windows" ]]; then
      aOS="windows";
@@ -252,7 +255,7 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
     shift
   done
     set -- "${mArgs[@]}"  # Restore the command arguments, lower case, three letters                        # .(41116.03.1 End)
-    echo ""
+#   echo ""                                                                             ##.(41224.01.7 RAM Remove echo "")
                                                     aArgFlags="-"                                           # .(41116.03.2 RAM Add aArgFlags Beg)
     if [ "${bDoit}"     == "1" ]; then aArgFlags="${aArgFlags}d"; fi
     if [ "${bDebug}"    == "1" ]; then aArgFlags="${aArgFlags}b"; fi
@@ -383,7 +386,7 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
     exit_wCR
   else
     echo "  RepoDir is: ${aRepoDir}"; #  exit_wCR
-    fi
+    fi # eif "${aStage}" == "$(pwd)"
 # ---------------------------------------------------------------------------
 
   if [ "${aCmd}" == "setup" ]; then

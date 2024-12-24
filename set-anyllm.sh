@@ -14,6 +14,7 @@
 ##FD   set-anyllm.sh            |   6741| 11/12/24 08:35|   181| v1.05`41112.0830
 ##FD   set-anyllm.sh            |   7786| 11/14/24 10:39|   181| v1.05`41114.1030
 ##FD   set-anyllm.sh            |   9429| 11/25/24  9:00|   190| v1.05`41125.0900
+##FD   set-anyllm.sh            |   9923| 12/24/24 11:00|   194| v1.05`41224.1100
 ##FD                            |
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #            This script saves anyllm command to ._0/bin.
@@ -43,6 +44,7 @@
 # .(41112.02 11/12/24 RAM  8:30a| Display anyllm version being installed
 # .(41114.01 11/14/24 RAM 10:30a| Add back AnythingLLM's debug commands
 # .(41120.02 11/25/24 RAM  9:00a| Ignore file permissions in this repo
+# .(41224.01 12/24/24 RAM 11:00a| Add -doit and -d
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -56,6 +58,7 @@
   aVer="v0.05.41111.1022"  # set-anyllm.sh
   aVer="v0.05.41112.0830"  # set-anyllm.sh
   aVer="v0.05.41114.1030"  # set-anyllm.sh
+  aVer="v0.05.41224.1100"  # set-anyllm.sh
 
   echo ""
 
@@ -79,7 +82,7 @@ function exit_wCR() {
 function setOSvars() {
      aTS=$( date '+%y%m%d.%H%M' ); aTS=${aTS:2}
      aBashrc="$HOME/.bashrc"
-     aBinDir="/Home/._0/bin"
+     aBinDir="/home/._0/bin"                                                            # .(41224.01.1 RAM Was Home)
      aOS="linux"
   if [[ "${OS:0:7}" == "Windows" ]]; then
      aOS="windows";
@@ -99,10 +102,11 @@ function Sudo() {                                                               
 # -----------------------------------------------------------
 
                                   aCmd="help"
-#  if [[ "$1" == ""      ]]; then aCmd="help";   fi
-   if [[ "$1" == "help"  ]]; then aCmd="help";   fi
-   if [[ "$1" == "doit"  ]]; then aCmd="doIt";   fi
-   if [[ "$1" == "show"  ]]; then aCmd="showEm"; fi
+#  if [[ "$1" == ""         ]]; then aCmd="help";   fi
+   if [[ "$1" == "help"     ]]; then aCmd="help";   fi
+   if [[ "$1" == "doit"     ]]; then aCmd="doIt";   fi
+   if [[ "${1:0:2}" == "-d" ]]; then aCmd="doIt";   fi                                  # .(41224.01.2 RAM Add -d or -doit)
+   if [[ "$1" == "show"     ]]; then aCmd="showEm"; fi
 
 # ---------------------------------------------------------------------------
 
@@ -183,8 +187,8 @@ function cpyToBin() {
 
 # ---------------------------------------------------------------------------
 
-  cd "${aRepo_Dir}"  ||
+   cd "${aRepo_Dir}"                                                                    # .(41224.01.3 RAM Removed /)
 
-  exit_wCR
+   exit_wCR
 
 
