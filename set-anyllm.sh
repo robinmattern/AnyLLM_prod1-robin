@@ -14,8 +14,8 @@
 ##FD   set-anyllm.sh            |   6741| 11/12/24 08:35|   181| v1.05`41112.0830
 ##FD   set-anyllm.sh            |   7786| 11/14/24 10:39|   181| v1.05`41114.1030
 ##FD   set-anyllm.sh            |   9429| 11/25/24  9:00|   190| v1.05`41125.0900
-##FD   set-anyllm.sh            |   9923| 12/24/24 11:00|   194| v1.05`41224.1100
-##FD                            |
+##FD   set-anyllm.sh            |  10420| 12/24/24 11:00|   202| v1.05`41224.1100
+
 ##DESC     .--------------------+-------+---------------+------+-----------------+
 #            This script saves anyllm command to ._0/bin.
 #
@@ -45,6 +45,7 @@
 # .(41114.01 11/14/24 RAM 10:30a| Add back AnythingLLM's debug commands
 # .(41120.02 11/25/24 RAM  9:00a| Ignore file permissions in this repo
 # .(41224.01 12/24/24 RAM 11:00a| Add -doit and -d
+# .(41224.02 12/24/24 RAM 11:30a| Check for Node and Yarn
 #
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -58,7 +59,7 @@
   aVer="v0.05.41111.1022"  # set-anyllm.sh
   aVer="v0.05.41112.0830"  # set-anyllm.sh
   aVer="v0.05.41114.1030"  # set-anyllm.sh
-  aVer="v0.05.41224.1100"  # set-anyllm.sh
+  aVer="v0.05.41224.1300"  # set-anyllm.sh
 
   echo ""
 
@@ -101,7 +102,7 @@ function Sudo() {                                                               
      }                                                                                                      # .(41105.03.3)
 # -----------------------------------------------------------
 
-                                  aCmd="help"
+                                     aCmd="help"
 #  if [[ "$1" == ""         ]]; then aCmd="help";   fi
    if [[ "$1" == "help"     ]]; then aCmd="help";   fi
    if [[ "$1" == "doit"     ]]; then aCmd="doIt";   fi
@@ -149,7 +150,14 @@ function mkScript() {
 
 function cpyToBin() {
 # return
-
+   if [ ! $( which node 2>/dev/null ) ]; then                                           # .(41224.02.1 RAM Check for node and yarn Beg)
+      echo -e "\n* You need to install NodeJS.  Use NVS to easily switch versions."
+      exit_wCR
+      fi
+   if [ ! $( which yarn 2>/dev/null ) ]; then
+      echo -e "\n  Installing YARN ..."
+      npm install --global yarn
+      fi                                                                                # .(41224.02.1 End)
   aJPTs_JDir="${aBinDir}"   # "/Users/Shared/._0/bin"
 # aJPTs_GitR="${aRepo_Dir}/._2/JPTs/gitr.sh"                                            # .(41109.13.1 RAM Not needed )
   aAnyLLMscr="${aRepo_Dir}/run-anyllm.sh"
