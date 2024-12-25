@@ -18,7 +18,8 @@
 ##FD   set-anyllm.sh            |  27963| 12/04/24 09:55|   458| v1.05`41204.0955
 ##FD   set-anyllm.sh            |  28803| 12/05/24 09:50|   467| v1.05`41205.0950
 ##FD   set-anyllm.sh            |  29230| 12/24/24 11:00|   470| v1.05`41224.1100
-
+##FD   set-anyllm.sh            |  29230| 12/25/24 16:40|   470| v1.05`41225.1640
+#
 #DESC     .---------------------+-------+---------------+------+-----------------+
 #            This script runs AnyLLM Apps
 #
@@ -49,7 +50,7 @@
 #.(41114.02  11/14/24 RAM 10:30a| Write and use setIPAddr for frontend .env
 #.(41115.02  11/14/24 RAM 10:30a| Update AnyLLM and ALTools
 #.(41116.03  11/16/24 RAM 11:40a| Add -bdf, for bDebug, bDoit, bForce
-#.(41114.02  11/17/24 RAM  5:45p| Fix setIPAddr for Mac and Unix
+#.(41114.02b 11/17/24 RAM  5:45p| Fix setIPAddr for Mac and Unix
 #.(41201.02  12/01/24 RAM  3:00p| Use FRT's Show/Kill Port(s)
 #.(41201.06  12/01/24 RAM  9:25p| Cleanup setup command
 #.(41115.02b 12/03/24 RAM  9:00a| Update update command
@@ -58,6 +59,7 @@
 #.(41109.08b 12/04/24 RAM  9:55p| Check for Repos/Robin
 #.(41115.02f 12/05/24 RAM  9:50p| Don't delete branch for update altools
 #.(41224.01  12/24/24 RAM 11:00a| Fix blank lines
+#.(41114.02c 12/24/24 RAM  4:40p| Fix setIPAddr for Unix
 
 ##PRGM     +====================+===============================================+
 ##ID 69.600. Main0              |
@@ -80,6 +82,7 @@
   aVer="v0.05.41204.0955"  # run-anyllm.sh
   aVer="v0.05.41205.0950"  # run-anyllm.sh
   aVer="v0.05.41224.1100"  # run-anyllm.sh
+  aVer="v0.05.41225.1640"  # run-anyllm.sh
 
   # ---------------------------------------------------------------------------
 
@@ -181,15 +184,17 @@ function get_subnet_ip() {
    return 1
    }
 
-function setIPAddr() {                                                                  # .(41114.02.1 RAM Write setIPAddr)
-   if [ "${aOS}" != "windows" ]; then
-                     mIPs=( $( ifconfig | awk '/inet / { print substr( $0,  7 ) }' ) )  # .(41114.02.2 RAM For Mac)
-       else
-   if [ "${aOS}" == "windows" ]; then
-         mapfile  -t mIPs < <( ipconfig | awk '/IPv4 / { print substr( $0, 40 ) }' )
-       else                                                                             # .(41114.02.3 RAM For Unix)
-         mapfile  -t mIPs < <( ifconfig | awk '/inet / { print substr( $0,  7 ) }' )    # .(41114.02.4)
-         fi; fi                                                                         # .(41114.02.5)
+function setIPAddr() {                                                                                                   # .(41114.02.1  RAM Write setIPAddr)
+#  if [ "${aOS}" == "windows" ]; then             aIP="$(   ipconfig | awk '/IPv4 / { a = substr( $0, 40 ) }; END {                      print a }' )"; fi
+#  if [ "${aOS}" == "darwin"  ]; then             aIP="$(   ifconfig | awk '/inet / { a = $2               }; END {                      print a }' )"; fi   
+#  if [ "${aOS}" == "linux"   ]; then             aIP="$(   ip a     | awk '/inet / { a = $2               }; END { sub( /\/.*/, "", a); print a }' )"; fi   
+                                                                                                                         
+#  if [ "${aOS}" != "windows" ]; then             mIPs=( $( ifconfig | awk '/inet / { print substr( $0,  7 ) }' ) )      ##.(41114.02.2  RAM For Mac).(41114.02b.2)
+   if [ "${aOS}" == "darwin"  ]; then             mIPs=( $( ifconfig | awk '/inet / { print substr( $0,  7 ) }' ) ); fi  # .(41114.02c.1).(41114.02b.2 RAM For Mac)
+   if [ "${aOS}" == "windows" ]; then mapfile  -t mIPs < <( ipconfig | awk '/IPv4 / { print substr( $0, 40 ) }'   ); fi  # .(41114.02c.3).(41114.02.3 RAM For Windows)
+   if [ "${aOS}" == "linux"   ]; then mapfile  -t mIPs < <( ip a     | awk '/inet / { print substr( $0,  7 ) }'   ); fi  # .(41114.02c.4 RAM Only works in vatest versions of Ubuntu)).(41114.02b.4 RAM for Unix)
+#      else                                                                                                              ##.(41114.02b.3) 
+#        fi; fi                                                                                                          ##.(41114.02.5).(41114.02c.5)
 
          aIPAddr="$( get_subnet_ip "^192\.168\." || \
                      get_subnet_ip "^10\.0\.0\." || \
@@ -409,7 +414,7 @@ while [[ $# -gt 0 ]]; do  # Loop through all arguments                          
      echo "  copying ./frontend/.env.example  to ./frontend/.env  ($(  ls -l ./frontend/.env  | awk '{ print $6" "$7" "$8"  "$5" bytes" }' ))"
      cp -p "${aRepoDir}/frontend/.env.example"           "${aRepoDir}/frontend/.env"
      echo "  copied  ./frontend/.env.example  to ./frontend/.env  ($(  ls -l ./frontend/.env  | awk '{ print $6" "$7" "$8"  "$5" bytes" }' ))"
-             setIPAddr                                                                  #.(41114.02.2)
+             setIPAddr                                                                  # .(41114.02.2)
      echo ""
      echo "  copying ./server/.env.development.example to ./server/.env.development ($(  ls -l ./server/.env.development | awk '{ print $6" "$7" "$8"  "$5" bytes" }' ))"
      cp -p "${aRepoDir}/server/.env.development.example" "${aRepoDir}/server/.env.development"
